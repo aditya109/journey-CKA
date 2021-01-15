@@ -1,0 +1,36 @@
+apiVersion: v1 # version of Kubernetes API
+kind: Pod # kind of Kubernetes object to be created
+metadata: # data about the Kubernetes object `kind`
+  name: myapp-pod
+  labels:
+    app: myapp
+    type: front-end
+    env: test
+spec: # specification about Kubernetes object `kind`
+  containers:
+    - name: nginx-container
+      image: nginx
+  nodeName: # by default is empty
+  tolerations:
+    - key: "app"
+      operator: "Equal"
+      value: "blue"
+      effect: "NoSchedule" 
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: size
+            operator: In
+            values:
+            - Large
+  resources:
+    requests:
+      memory: "1Gi"
+      cpu: 1
+  limits:
+    memory: "2Gi"
+    cpu: 2
+    
+  schedulerName: my-custom-scheduler
