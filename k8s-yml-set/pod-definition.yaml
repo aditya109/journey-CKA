@@ -25,6 +25,8 @@ spec: # specification about Kubernetes object `kind`
             operator: In
             values:
             - Large
+  nodeSelector:
+    size: Large
   resources:
     requests:
       memory: "1Gi"

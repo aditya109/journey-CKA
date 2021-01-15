@@ -13,3 +13,4 @@ spec:
     metadata:
       labels:
         app: monitoring-agent
+
