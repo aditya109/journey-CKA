@@ -60,6 +60,8 @@ Two types of Nodes:
    **c.    Controller-Managers**
 
    **d.    kube-apiserver**
+   
+   ![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/1. Core Concepts/assets/image1.svg?token=AFH4ROZZHDUCY5XOXJAPG7DAAF65C)
 
 ## ETCD
 
@@ -79,35 +81,31 @@ ETCD is a distributed reliable **key-value** store that is simple, secure & fast
 
 `.etcdctl get key1` This command gets the entry under `key1` from ETCD Store.
 
-`.etcdctl ` This command is the .etcdctl help command.
+`.etcdctl ` This command is the `.etcdctl` help command.
 
 #### ETCD Cluster
 
 It records every detail of Kubernetes entity like:
 
-1. Nodes
+1. **Nodes**
+2. **PODs**
+3. **Configs**
+4. **Secrets**
+5. **Accounts**
+6. **Roles**
+7. **Bindings**
+8. **Others**
 
-2. PODs
+![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/1. Core Concepts/assets/image2.svg?token=AFH4RO6L65NFJBDNUOUGQCLAAF7M6)
 
-3. Configs
+(Optional) Additional information about ``ETCDCTL`` Utility
 
-4. Secrets
+ ``ETCDCTL`` is the CLI tool used to interact with ETCD.
 
-5. Accounts
+ ``ETCDCTL`` can interact with ETCD Server using 2 API versions - Version 2 and Version 3. 
+By default, its set to use Version 2. Each version has different sets of commands.
 
-6. Roles
-
-7. Bindings
-
-8. Others
-
-(Optional) Additional information about ETCDCTL Utility
-
- ETCDCTL is the CLI tool used to interact with ETCD.
-
- ETCDCTL can interact with ETCD Server using 2 API versions - Version 2 and Version 3. By default, its set to use Version 2. Each version has different sets of commands.
-
-For example, ETCDCTL version 2 supports the following commands:
+For example, ``ETCDCTL`` version 2 supports the following commands:
 
 1.  `etcdctl backup`
 
@@ -130,15 +128,15 @@ Whereas the commands are different in version 3
 4.  `etcdctl put`
 
 
- To set the right version of API set the environment variable ETCDCTL_API command
+ To set the right version of API set the environment variable `ETCDCTL_API` command
 
-```
+```powershell
 export ETCDCTL_API=3
 ```
 
 When API version is not set, it is assumed to be set to version 2. And version 3 commands listed above don't work. When API version is set to version 3, version 2 commands listed above don't work.
 
-Apart from that, you must also specify path to certificate files so that ETCDCTL can authenticate to the ETCD API Server. The certificate files are available in the etcd-master at the following path. We discuss more about certificates in the security section of this course. So don't worry if this looks complex:
+Apart from that, you must also specify path to certificate files so that `ETCDCTL` can authenticate to the ETCD API Server. The certificate files are available in the etcd-master at the following path. We discuss more about certificates in the security section of this course. So don't worry if this looks complex:
 
 1.  `--cacert /etc/kubernetes/pki/etcd/ca.crt`   
 
@@ -146,7 +144,7 @@ Apart from that, you must also specify path to certificate files so that ETCDCTL
 
 3.  `--key /etc/kubernetes/pki/etcd/server.key`
 
-So, for the commands I showed in the previous video to work you must specify the ETCDCTL API version and path to certificate files. Below is the final form:
+So, for the commands I showed in the previous video to work you must specify the `ETCDCTL` API version and path to certificate files. Below is the final form:
 
 ## Kube-API Server
 
@@ -154,7 +152,21 @@ The API server is a component of the Kubernetes control plane that exposes the K
 
 Only kube-apiserver talk to ETCD cluster, rest of the control-plane components talk to ETCD cluster via kube-apiserver.
 
-`kubectl get pods -n kube-system`
+![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/1. Core Concepts/assets/image3.svg?token=AFH4RO5C25M7GM62MTXU2JDAAF7WA)
+
+```powershell
+Aditya :: learning-k8s » kubectl get pods -n kube-system
+NAME                                     READY   STATUS    RESTARTS   AGE
+coredns-f9fd979d6-blxfl                  1/1     Running   0          6m13s
+coredns-f9fd979d6-v54dp                  1/1     Running   0          6m13s
+etcd-docker-desktop                      1/1     Running   0          5m
+kube-apiserver-docker-desktop            1/1     Running   0          5m
+kube-controller-manager-docker-desktop   1/1     Running   0          5m5s
+kube-proxy-zk49d                         1/1     Running   0          6m13s
+kube-scheduler-docker-desktop            1/1     Running   0          5m11s
+storage-provisioner                      1/1     Running   0          4m58s
+vpnkit-controller                        1/1     Running   0          4m57s
+```
 
 This command gives us all control-plane components running in kube-system namespace.
 
@@ -264,6 +276,8 @@ kube-proxy maintains network rules on nodes. These network rules allow network c
 
 kube-proxy uses the operating system packet filtering layer if there is one and it's available. Otherwise, kube-proxy forwards the traffic itself.
 
+![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/1. Core Concepts/assets/image5.svg)
+
 `ps -aux | grep kube-proxy `
 
 ### PODs
@@ -278,9 +292,8 @@ A Pod's contents are always co-located and co-scheduled and run in a shared cont
 
 Usually, Pods are not required to be created directly, even singleton Pods. 
 
-Instead, create them using workload resources such as Deployment or Job. 
-
-*If your Pods need to track state, consider the StatefulSet resource.*
+> *Instead, create them using workload resources such as Deployment or Job.* 
+> *If your Pods need to track state, consider the StatefulSet resource.*
 
 Pods in a Kubernetes cluster are used in two main ways:
 
@@ -422,6 +435,8 @@ Using labels and selectors, the ReplicaSet knows which pods to monitor in a clus
 
 A Deployment provides declarative updates for Pods and ReplicaSets.
 
+![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/1. Core Concepts/assets/image6.svg)
+
 The contents of **deployment-definition.yml** is as follows:
 
 ```yaml
@@ -473,13 +488,15 @@ BONUS TIP:
 
 Kubernetes supports multiple virtual clusters backed by the same physical cluster. These virtual clusters are called namespaces.
 
-Namespaces are intended for use in environments with many users spread across multiple teams, or projects. For clusters with a few to tens of users, you should not need to create or think about namespaces at all. Start using namespaces when you need the features they provide.
+- Namespaces are intended for use in environments with many users spread across multiple teams, or projects. For clusters with a few to tens of users, you should not need to create or think about namespaces at all. Start using namespaces when you need the features they provide.
 
-Namespaces provide a scope for names. Names of resources need to be unique within a namespace, but not across namespaces. Namespaces cannot be nested inside one another and each Kubernetes resource can only be in one namespace.
+- Namespaces provide a scope for names. Names of resources need to be unique within a namespace, but not across namespaces. Namespaces cannot be nested inside one another and each Kubernetes resource can only be in one namespace.
 
-Namespaces are a way to divide cluster resources between multiple users (via resource quota).
+- Namespaces are a way to divide cluster resources between multiple users (via resource quota).
 
-The namespace-dev.yml is follows:
+![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/1.%20Core%20Concepts/assets/image7.svg)
+
+The `namespace-dev.yml` is follows:
 
 ```yaml
 apiVersion: v1
@@ -502,7 +519,7 @@ Commands:
 
 #### Resource Quota
 
-The compute-quota.yml is as follows:
+The **compute-quota.yml** is as follows:
 
 ```yaml
 apiVersion: v1
@@ -529,16 +546,21 @@ An abstract way to expose an application running on a set of Pods as a network s
 
 With Kubernetes you don't need to modify your application to use an unfamiliar service discovery mechanism. Kubernetes gives Pods their own IP addresses and a single DNS name for a set of Pods, and can load-balance across them.
 
+![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/1. Core Concepts/assets/image8.svg)
+
 #### Service Types:
 
 1.    NodePort
+      ![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/1. Core Concepts/assets/image9.svg)
       
-2. ClusterIP    
+2.    ClusterIP    
+      ![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/1. Core Concepts/assets/image10.svg)
 
 3. LoadBalancer
 
-
 #### Services NodePort
+
+![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/1.%20Core%20Concepts/assets/image11.svg)
 
 The **nodeport-service-definition.yml** is as follows:
 
@@ -565,6 +587,8 @@ Commands:
 
 #### Services ClusterIP
 
+
+
 The **clusterip-service-definition.yaml** is as follows:
 
 ```yaml
@@ -583,6 +607,8 @@ spec:
 ```
 
 #### Services LoadBalancer
+
+![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/1. Core Concepts/assets/image12.svg)
 
 Typical solution:
 
