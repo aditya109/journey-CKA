@@ -61,7 +61,7 @@ Two types of Nodes:
 
    **d.    kube-apiserver**
    
-   ![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/1. Core Concepts/assets/image1.svg?token=AFH4ROZZHDUCY5XOXJAPG7DAAF65C)
+   ![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/Core%20Concepts/assets/image1.svg?token=AFH4ROZZHDUCY5XOXJAPG7DAAF65C)
 
 ## ETCD
 
@@ -96,7 +96,7 @@ It records every detail of Kubernetes entity like:
 7. **Bindings**
 8. **Others**
 
-![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/1. Core Concepts/assets/image2.svg?token=AFH4RO6L65NFJBDNUOUGQCLAAF7M6)
+![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/Core%20Concepts/assets/image2.svg?token=AFH4RO6L65NFJBDNUOUGQCLAAF7M6)
 
 (Optional) Additional information about ``ETCDCTL`` Utility
 
@@ -152,7 +152,7 @@ The API server is a component of the Kubernetes control plane that exposes the K
 
 Only kube-apiserver talk to ETCD cluster, rest of the control-plane components talk to ETCD cluster via kube-apiserver.
 
-![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/1. Core Concepts/assets/image3.svg?token=AFH4RO5C25M7GM62MTXU2JDAAF7WA)
+![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/Core%20Concepts/assets/image3.svg?token=AFH4RO5C25M7GM62MTXU2JDAAF7WA)
 
 ```powershell
 Aditya :: learning-k8s » kubectl get pods -n kube-system
@@ -276,7 +276,7 @@ kube-proxy maintains network rules on nodes. These network rules allow network c
 
 kube-proxy uses the operating system packet filtering layer if there is one and it's available. Otherwise, kube-proxy forwards the traffic itself.
 
-![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/1. Core Concepts/assets/image5.svg)
+![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/Core%20Concepts/assets/image5.svg)
 
 `ps -aux | grep kube-proxy `
 
@@ -435,7 +435,7 @@ Using labels and selectors, the ReplicaSet knows which pods to monitor in a clus
 
 A Deployment provides declarative updates for Pods and ReplicaSets.
 
-![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/1. Core Concepts/assets/image6.svg)
+![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/Core%20Concepts/assets/image6.svg)
 
 The contents of **deployment-definition.yml** is as follows:
 
@@ -546,15 +546,15 @@ An abstract way to expose an application running on a set of Pods as a network s
 
 With Kubernetes you don't need to modify your application to use an unfamiliar service discovery mechanism. Kubernetes gives Pods their own IP addresses and a single DNS name for a set of Pods, and can load-balance across them.
 
-![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/1. Core Concepts/assets/image8.svg)
+![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/Core%20Concepts/assets/image8.svg)
 
 #### Service Types:
 
 1.    NodePort
-      ![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/1. Core Concepts/assets/image9.svg)
+      ![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/Core%20Concepts/assets/image9.svg)
       
 2.    ClusterIP    
-      ![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/1. Core Concepts/assets/image10.svg)
+      ![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/Core%20Concepts/assets/image10.svg)
 
 3. LoadBalancer
 
@@ -608,7 +608,7 @@ spec:
 
 #### Services LoadBalancer
 
-![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/1. Core Concepts/assets/image12.svg)
+![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/Core%20Concepts/assets/image12.svg)
 
 Typical solution:
 

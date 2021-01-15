@@ -6,7 +6,7 @@
   * [Labels and Selectors](#labels-and-selectors)
     + [Annotations](#annotations)
   * [Taints and Tolerations](#taints-and-tolerations)
-        * [Taint Effects:](#taint-effects-)
+    * [Taint Effects:](#taint-effects-)
   * [Node Selectors](#node-selectors)
   * [Node Affinity](#node-affinity)
   * [Resources Requirements and Limits](#resources-requirements-and-limits)
@@ -449,11 +449,9 @@ Some typical uses of a DaemonSet are:
 
 - running a node monitoring daemon on every node
 
-
-
  It uses `NodeAffinity` to schedule pods on nodes.
 
- ![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/1. Core Concepts/assets/image21.svg)
+ ![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/Core%20Concepts/assets/image21.svg)
 
  ```yaml
 apiVersion: apps/v1
