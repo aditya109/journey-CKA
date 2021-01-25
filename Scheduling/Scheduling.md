@@ -26,7 +26,7 @@
 
 ##        Manually Scheduling
 
- The scheduler goes through all the nodes and finds those nodes who’s this property is not set. These are the nodes which will be used for scheduling. Once identified, it sets this property of the node in the pod along side with it and schedules the pod on that node, creating a binding object.
+The scheduler goes through all the nodes and finds those nodes who’s this property is not set. These are the nodes which will be used for scheduling. Once identified, it sets this property of the node in the pod along side with it and schedules the pod on that node, creating a binding object.
 
 ```yaml
 apiVersion: v1 # version of Kubernetes API
