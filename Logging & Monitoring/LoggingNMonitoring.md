@@ -1,4 +1,13 @@
-# Logging and Monitoring
+## Table of Contents
+
+- [Logging and Monitoring 📰](#logging-and-monitoring---)
+  * [Monitoring Solution](#monitoring-solution)
+    + [How to works?](#how-to-works-)
+    + [How to see live logs from Kubernetes Resources ?](#how-to-see-live-logs-from-kubernetes-resources--)
+
+<small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
+
+# Logging and Monitoring 📰
 
 **How do monitor resource consumption in Kubernetes ? What would you like to know in a cluster ??**
 
