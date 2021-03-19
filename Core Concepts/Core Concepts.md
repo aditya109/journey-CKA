@@ -427,9 +427,12 @@ Using labels and selectors, the ReplicaSet knows which pods to monitor in a clus
 #### Scaling Replicas   
 
 1.    Update the yaml and run the command: `kubectl replace -f replicaset-definition.yml`
-
 2.    We can also use the command: `kubectl scale --replicas=6 -f replicaset-definition.yml`, 
  or, `kubectl scale --replicas=6 -f replicaset myapp-replicaset` but this does not change **replicaset-definition.yml.**
+
+The only difference between replica set and replication controller is the selector types.
+
+The replication controller supports equality based selectors whereas the replica set supports equality based as well as set based selectors.
 
 ### Deployments
 
@@ -494,7 +497,7 @@ Kubernetes supports multiple virtual clusters backed by the same physical cluste
 
 - Namespaces are a way to divide cluster resources between multiple users (via resource quota).
 
-![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/1.%20Core%20Concepts/assets/image7.svg)
+![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/Core Concepts/assets/image7.svg)
 
 The `namespace-dev.yml` is follows:
 
@@ -560,7 +563,7 @@ With Kubernetes you don't need to modify your application to use an unfamiliar s
 
 #### Services NodePort
 
-![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/1.%20Core%20Concepts/assets/image11.svg)
+![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/Core Concepts/assets/image11.svg)
 
 The **nodeport-service-definition.yml** is as follows:
 
