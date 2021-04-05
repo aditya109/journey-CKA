@@ -473,19 +473,20 @@ Commands:
 
 2.    To get deployments: `kubectl get deployments`
 
-BONUS TIP:
-
-1.    Create a NGINX Pod: `kubectl run nginx --image=nginx`
-
-2.    Generate POD Manifest YAML file (-o yaml). Don't create it (--dry-run): `kubectl run nginx --image=nginx --dry-run=client -o yaml`
-
-3.    Create a deployment: `kubectl create deployment --image=nginx nginx`
-
-4.    Generate Deployment YAML file (-o yaml). Don't create it (--dry-run): `kubectl create deployment --image=nginx nginx --dry-run=client -o yaml`
-
-5.    Generate Deployment YAML file (-o yaml). Don't create it (--dry-run) with 4 Replicas (--replicas=4): `kubectl create deployment --image=nginx nginx --dry-run=client -o yaml > nginx-deployment.yaml`
-
-6.    Save it to a file, make necessary changes to the file (for example, adding more replicas) and then create the deployment.
+> BONUS TIP:
+>
+> 1.    Create a NGINX Pod: `kubectl run nginx --image=nginx`
+>
+> 2.    Generate POD Manifest YAML file (-o yaml). Don't create it (--dry-run): `kubectl run nginx --image=nginx --dry-run=client -o yaml`
+>
+> 3.    Create a deployment: `kubectl create deployment --image=nginx nginx`
+>
+> 4.    Generate Deployment YAML file (-o yaml). Don't create it (--dry-run): `kubectl create deployment --image=nginx nginx --dry-run=client -o yaml`
+>
+> 5.    Generate Deployment YAML file (-o yaml). Don't create it (--dry-run) with 4 Replicas (--replicas=4): `kubectl create deployment --image=nginx nginx --dry-run=client -o yaml > nginx-deployment.yaml`
+>
+> 6.    Save it to a file, make necessary changes to the file (for example, adding more replicas) and then create the deployment.
+>
 
 ### Namespaces
 
@@ -590,7 +591,7 @@ Commands:
 
 #### Services ClusterIP
 
-
+A ClusterIP service is the Kubernetes service which gives you a service inside your cluster that other apps inside you cluster can access, for which there is no external access.
 
 The **clusterip-service-definition.yaml** is as follows:
 
@@ -602,12 +603,24 @@ metadata:
 spec:
   type: ClusterIP
   ports:
-    - targetPort: 80    # port where the backend is exposed
-      port: 80          # port where the service is exposed
+    - name: http
+      port: 80			# port where the service is exposed
+      targetPort: 80		# port where the backend is exposed
+      protocol: TCP
   selector:
     app: myapp
     type: back-end
 ```
+
+You can't access a ClusterIP service from the internet. To do it, you need a Kubernetes proxy.
+
+
+
+
+
+
+
+
 
 #### Services LoadBalancer
 

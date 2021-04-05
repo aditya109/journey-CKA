@@ -605,7 +605,117 @@ kubectl get events
 kubectl logs my-custom-scheduler --name-space=kube-system
 ```
 
+## Extras:
 
+1. How to get the name of the pod that deploys the default kubernetes scheduler in this environment?
+
+   -  ```powershell
+     kubectl get pods --namespace=kube-system
+      ```
+
+2. How to create a custom-scheduler?
+
+   - All the default yamls reside in `/etc/kubernetes/manifests`.
+
+   - Go from there and copy the `kube-scheduler.yaml` to your location e.g.,`/root`.
+
+   - ```powershell
+     mv kube-scheduler.yaml /root/my-scheduler.yaml
+     cd /root
+     ```
+
+   - Go to Kubernetes documentation and search for **Multiple Schedulers**. Check the pod definition section.
+
+   - ```yaml
+     # admin/sched/my-scheduler.yaml 
+     apiVersion: v1
+     kind: ServiceAccount
+     metadata:
+       name: my-scheduler
+       namespace: kube-system
+     ---
+     apiVersion: rbac.authorization.k8s.io/v1
+     kind: ClusterRoleBinding
+     metadata:
+       name: my-scheduler-as-kube-scheduler
+     subjects:
+     - kind: ServiceAccount
+       name: my-scheduler
+       namespace: kube-system
+     roleRef:
+       kind: ClusterRole
+       name: system:kube-scheduler
+       apiGroup: rbac.authorization.k8s.io
+     ---
+     apiVersion: rbac.authorization.k8s.io/v1
+     kind: ClusterRoleBinding
+     metadata:
+       name: my-scheduler-as-volume-scheduler
+     subjects:
+     - kind: ServiceAccount
+       name: my-scheduler
+       namespace: kube-system
+     roleRef:
+       kind: ClusterRole
+       name: system:volume-scheduler
+       apiGroup: rbac.authorization.k8s.io
+     ---
+     apiVersion: apps/v1
+     kind: Deployment
+     metadata:
+       labels:
+         component: scheduler
+         tier: control-plane
+       name: my-scheduler											#👈 name your scheduler - NAME1
+       namespace: kube-system						
+     spec:
+       selector:
+         matchLabels:
+           component: scheduler
+           tier: control-plane
+       replicas: 1
+       template:
+         metadata:
+           labels:
+             component: scheduler
+             tier: control-plane
+             version: second
+         spec:
+           serviceAccountName: my-scheduler
+           containers:
+           - command:
+             - /usr/local/bin/kube-scheduler
+             - --address=0.0.0.0
+             - --leader-elect=false										#👈 change this to true
+             - --scheduler-name=my-scheduler								#👈 change to NAME1
+             image: gcr.io/my-gcp-project/my-kube-scheduler:1.0
+             livenessProbe:
+               httpGet:
+                 path: /healthz
+                 port: 10251
+               initialDelaySeconds: 15
+             name: kube-second-scheduler									#👈 changeable as well, but not needed to match NAME1
+             readinessProbe:
+               httpGet:
+                 path: /healthz
+                 port: 10251
+             resources:
+               requests:
+                 cpu: '0.1'
+             securityContext:
+               privileged: false
+             volumeMounts: []
+           hostNetwork: false
+           hostPID: false
+           volumes: []
+     
+     ```
+
+   - ```powershell
+     kubectl create -f my-scheduler.yaml 
+     ```
+
+     
 
  
 

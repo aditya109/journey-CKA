@@ -1,4 +1,4 @@
-# Application Lifecycle Management
+# 	Application Lifecycle Management
 
 ## Rolling Updates and Rollbacks in Deployments
 
@@ -427,7 +427,5 @@ Other ways to inject `configMaps`:
 
 ## Scale Applications
 
-## Self-Healing Application
-
-
+## Self-Healing Applications					
 
