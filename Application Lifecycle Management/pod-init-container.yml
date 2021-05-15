@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: myapp-pod
+  labels:
+    name: myapp
+spec:
+  containers:
+  - name: myapp-core
+    image: busybox
+    resources:
+      limits:
+        memory: "128Mi"
+        cpu: "500m"
+    command: ['sh', '-c', 'echo The app is running ! && sleep 3600']
+  initContainers:
+    - name: init-mysvc
+      image: busybox
+      command: ['sh', '-c', 'git clone https://github.com/aditya109/web-crawler-nodejs; done;']

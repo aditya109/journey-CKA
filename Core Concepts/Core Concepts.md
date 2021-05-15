@@ -348,7 +348,22 @@ kubectl pod-get command: `kubectl get pods`
 kubectl pod-deletion command: `kubectl delete pod nginx`
 
 To get information about all the pods: `kubectl get pods`
- To describe all the creation information of a pod: `kubectl describe pod myapp-pod`  
+To describe all the creation information of a pod: `kubectl describe pod myapp-pod`  
+
+A *traditional* container provides several forms of isolation:
+
+- Resource isolation,
+- Process isolation,
+- Filesystem and mount isolation,
+- Network isolation.
+
+The tools that are used under the hood are `Linux namespaces` and `control-groups (cgroups)`.
+
+**`Control groups` are a convenient wat to limit resources such as CPU or memory that a particular process can use.**
+
+**`Namespaces` are in charge of isolating the process and limiting what it can see.**
+
+On Kubernetes, a container provides all of those forms of isolation except network isolations; instead network isolation happens at the pod level.
 
 ### ReplicaSets
 
@@ -486,7 +501,6 @@ Commands:
 > 5.    Generate Deployment YAML file (-o yaml). Don't create it (--dry-run) with 4 Replicas (--replicas=4): `kubectl create deployment --image=nginx nginx --dry-run=client -o yaml > nginx-deployment.yaml`
 >
 > 6.    Save it to a file, make necessary changes to the file (for example, adding more replicas) and then create the deployment.
->
 
 ### Namespaces
 
@@ -546,23 +560,187 @@ Commands:
 
 ### Services
 
-An abstract way to expose an application running on a set of Pods as a network service.
+An abstract way to expose an application running on a set of Pods as a network service, providing :
+
+- Stable IP address;
+- Load balancing;
+- Loose coupling;
+- Within & outside cluster
 
 With Kubernetes you don't need to modify your application to use an unfamiliar service discovery mechanism. Kubernetes gives Pods their own IP addresses and a single DNS name for a set of Pods, and can load-balance across them.
+
+Also, one point to note that, whenever we create a `service`, `kubenetes` creates `endpoint` in the cluster, 
 
 ![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/Core%20Concepts/assets/image8.svg)
 
 #### Service Types:
 
-1.    NodePort
-      ![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/Core%20Concepts/assets/image9.svg)
-      
-2.    ClusterIP    
-      ![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/Core%20Concepts/assets/image10.svg)
+1.    ClusterIP    
+2.    Headless
+3.    NodePort
+4.    LoadBalancer
 
-3. LoadBalancer
+#### Services ClusterIP (default type of a service)
+
+A ClusterIP service is the Kubernetes service which gives you a service inside your cluster that other apps inside you cluster can access, for which there is no external access.
+
+![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/Core Concepts/assets/image22.svg)
+
+The **clusterip-service-definition.yaml** is as follows:
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-internal-service
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 80			# port where the service is exposed
+      targetPort: 80		# port where the backend is exposed
+      protocol: TCP
+  selector:
+    app: myapp
+    type: back-end
+```
+
+You can't access a ClusterIP service from the internet. To do it, you need a Kubernetes proxy.
+
+```powershell
+kubectl proxy --port=8080
+```
+
+Now, you can navigate through the Kubernetes API to access this service using this scheme:
+
+`http://localhost:8080/api/v1/proxy/namespaces/<NAMESPACE>/services/<SERVICE-NAME>:<PORT-NAME>/`
+
+So, to access the service we defined above, one can use
+
+```powershell
+http://localhost:8080/api/v1/proxy/namespaces/<NAMESPACE>/services/<SERVICE-NAME>:<PORT-NAME>/
+```
+
+**Use-case:**
+
+1. Debugging your services, or connecting to them directly from your laptop for some reason.
+2. Allowing internal traffic, displaying internal dashboards, etc.
+
+**A scenario for using `ClusterIP` service**
+
+![](D:\Work\teaching-myself\learning-k8s\Core Concepts\assets\image23.svg)
+
+```yaml
+# ingress.yaml
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: ms-one-ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+  labels:
+      name: myingress
+spec:
+  rules:
+  - host: localhost
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            serviceName: ms-one-service
+            servicePort: 3200
+```
+
+```yaml
+# svc.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: ms-one-service
+spec:
+  selector:
+    app: ms-one
+  ports:
+  - port: 3200						# arbitrary as 
+    targetPort: 3000				# should be same as pod exposed port
+```
+
+```powershell
+kubectl get endpoints
+NAME         ENDPOINTS           AGE
+grpc-svc     <none>              89m
+```
+
+**What if there is pod is a multi-container pod??**
+
+Let's say there is a pod which is exposed to `27017` and `9216`. 
+How to make a ClusterIP service for this type of pod?? 
+
+Basically we have to name those ports.
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb-service
+spec:
+  selector:
+    app: mongodb
+  ports:
+    - name: mongodb
+      protocol: TCP
+      port: 27017
+      targetPort: 27017
+    - name: mongodb-exporter
+      protocol: TCP
+      port: 9216
+      targetPort: 9216
+```
+
+#### Services Headless
+
+Use-cases of headless services:
+
+- Client wants to communicate with *1 specific Pod* directly.
+- Pods want to talk *directly with specific Pod*.
+- Stateful applications like `mysql`.
+
+The main problem here is that we need to figure out IP addresses of each Pod.
+
+Option 1 - API call to K8s API server ❓
+
+- makes app too tied to K8s API 🙄
+- inefficient 🤭
+
+Option 2 - DNS Lookup
+
+- DNS Lookup for service - returns single IP address (ClusterIP)
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb-service-headless
+spec:
+  clusterIP: None
+  selector:
+    app: mongodb
+  ports:
+    - name: mongodb
+      protocol: TCP
+      port: 27017
+      targetPort: 27017
+```
+
+No `clusterIP` is assigned.
+
+**Using we run a `headless` service along-with a `ClusterIP` service, so that normal requests go to the `ClusterIP` service and `headless` service will handle specific-pod requests like data-synchronization.**
 
 #### Services NodePort
+
+It creates a service which is accessible on a static port on each worker node in the cluster. The difference between `NodePort` and `ClusterIP` is that `ClusterIP` service is only accessible within the cluster, so no external traffic can directly address the `ClusterIP` service, whereas the `NodePort` service makes the traffic accessible on static or fixed port on each worker node.
 
 ![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/Core Concepts/assets/image11.svg)
 
@@ -583,44 +761,32 @@ spec:
     name: simple-webapp
 ```
 
-Commands:
+❗ `nodePort` can be within the range 30000-32767 only.
 
-1.    To create a service: `kubectl create -f service-definition.yml`
+Another example,
 
-2.    To get services: `kubectl get services`
-
-#### Services ClusterIP
-
-A ClusterIP service is the Kubernetes service which gives you a service inside your cluster that other apps inside you cluster can access, for which there is no external access.
-
-The **clusterip-service-definition.yaml** is as follows:
+![](D:\Work\teaching-myself\learning-k8s\Core Concepts\assets\image24.svg)
 
 ```yaml
 apiVersion: v1
 kind: Service
 metadata:
-  name: back-end
+  name: ms-service-nodeport
 spec:
-  type: ClusterIP
-  ports:
-    - name: http
-      port: 80			# port where the service is exposed
-      targetPort: 80		# port where the backend is exposed
-      protocol: TCP
+  type: NodePort
   selector:
-    app: myapp
-    type: back-end
+    app: ms-one
+  ports:
+    - port: 3200
+      targetPort: 3000
+      nodePort: 30008
 ```
 
-You can't access a ClusterIP service from the internet. To do it, you need a Kubernetes proxy.
+Commands:
 
+1.    To create a service: `kubectl create -f service-definition.yml`
 
-
-
-
-
-
-
+2.    To get services: `kubectl get services`
 
 #### Services LoadBalancer
 
@@ -639,10 +805,12 @@ metadata:
   name: myapp-service
 spec:
   type: LoadBalancer
+  selector:
+  	app: ms-one
   ports:
-    - targetPort: 80    # port where the backend is exposed
-      port: 80          # port where the service is exposed
-      nodePort: 30008
+    - targetPort: 3000    # port where the backend is exposed
+      port: 3000          # port where the service is exposed
+      nodePort: 30010
 ```
 
 ### Kubernetes Imperative and Declarative
@@ -699,7 +867,6 @@ kubectl create deployment --image=nginx nginx --dry-run=client -o yaml
 > ```
 >
 > You can then update the YAML file with the replicas or any other field before creating the deployment.
->
 
 **Service**
 
