@@ -22,7 +22,8 @@
         * [How Ambassador pattern works ?](#how-ambassador-pattern-works--)
       - [*Adapter Pattern:* *(exposing metrics with a standard interface)*](#-adapter-pattern-----exposing-metrics-with-a-standard-interface--)
       - [*Sidecar Pattern: (Tailing logs)*](#-sidecar-pattern---tailing-logs--)
-- [initContainers](#-initcontainers-)
+- [initContainers](#initcontainers)
+  * [Differences from regular containers](#differences-from-regular-containers)
 
 <small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
 
@@ -1034,9 +1035,28 @@ spec:
       command: ['sh', '-c', 'git clone https://github.com/aditya109/web-crawler-nodejs; done;']
 ```
 
-When a pod is first created the `initContainer` is run, and the process in the `initContainer` must run to a completion before the real container
+When a pod is first created the `initContainer` is run, and the process in the `initContainer` must run to a completion before the real container hosting the application starts.
 
+You can configure multiple such `initContainers` as well, like we did for multi-pod containers. In that case each `initContainers` is run **one at a time in sequential order.**
 
+If any of the `initContainers` fail to complete, Kubernetes restarts the Pod repeatedly until the `initContainer` succeeds.
+
+`initContainers` are exactly like regular containers, except:
+
+- `initContainers` always run to completion.
+- Each init container must complete successfully before the next one starts.
+
+If a Pod's init container fails, the kubelet repeatedly restarts the init container until it succeeds. However, if the Pod has a `restartPolicy` of Never, and an init container fails during startup of that Pod, Kubernetes treats the overall Pod as failed.
+
+To specify an init container for a Pod, add the `initContainer` field into the Pod specification, as an array of objects of type Container, alongside the app `containers` array. The status of the init containers is returned in `.status.initContainerStatuses` field as an array of the container statuses (similar to the `.status.containerStatuses` field).
+
+### Differences from regular containers
+
+`initContainers` support all the fields and features of app containers, including resource limits, volume, and security settings. However, the resource requests and limits for an init container are handled differently.
+
+Also, `initContainers` do not support `lifecycle`, `livenessProbe`, `readinessProbe` or `startupProbe` because they must run to completion before the Pod can be ready.
+
+If you specify multiple `initContainers` for a Pod, kubelet runs each init container sequentially. Each init container must succeed before the Pod can be ready. When all of the `initContainers` have run to completion, kubelet initializes the application containers for the Pod and runs them as usual.
 
 
 
