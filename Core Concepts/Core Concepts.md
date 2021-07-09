@@ -61,7 +61,7 @@ Two types of Nodes:
 
    **d.    kube-apiserver**
    
-   ![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/Core%20Concepts/assets/image1.svg?token=AFH4ROZZHDUCY5XOXJAPG7DAAF65C)
+   ![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/assets/image1.svg?token=AFH4ROZZHDUCY5XOXJAPG7DAAF65C)
 
 ## ETCD
 
@@ -96,7 +96,7 @@ It records every detail of Kubernetes entity like:
 7. **Bindings**
 8. **Others**
 
-![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/Core%20Concepts/assets/image2.svg?token=AFH4RO6L65NFJBDNUOUGQCLAAF7M6)
+![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/assets/image2.svg?token=AFH4RO6L65NFJBDNUOUGQCLAAF7M6)
 
 (Optional) Additional information about ``ETCDCTL`` Utility
 
@@ -152,7 +152,7 @@ The API server is a component of the Kubernetes control plane that exposes the K
 
 Only kube-apiserver talk to ETCD cluster, rest of the control-plane components talk to ETCD cluster via kube-apiserver.
 
-![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/Core%20Concepts/assets/image3.svg?token=AFH4RO5C25M7GM62MTXU2JDAAF7WA)
+![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/assets/image3.svg?token=AFH4RO5C25M7GM62MTXU2JDAAF7WA)
 
 ```powershell
 Aditya :: learning-k8s » kubectl get pods -n kube-system
@@ -276,7 +276,7 @@ kube-proxy maintains network rules on nodes. These network rules allow network c
 
 kube-proxy uses the operating system packet filtering layer if there is one and it's available. Otherwise, kube-proxy forwards the traffic itself.
 
-![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/Core%20Concepts/assets/image5.svg)
+![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/assets/image5.svg)
 
 `ps -aux | grep kube-proxy `
 
@@ -453,7 +453,7 @@ The replication controller supports equality based selectors whereas the replica
 
 A Deployment provides declarative updates for Pods and ReplicaSets.
 
-![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/Core%20Concepts/assets/image6.svg)
+![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/assets/image6.svg)
 
 The contents of **deployment-definition.yml** is as follows:
 
@@ -571,7 +571,7 @@ With Kubernetes you don't need to modify your application to use an unfamiliar s
 
 Also, one point to note that, whenever we create a `service`, `kubenetes` creates `endpoint` in the cluster, 
 
-![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/Core%20Concepts/assets/image8.svg)
+![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/assets/image8.svg)
 
 #### Service Types:
 
@@ -790,7 +790,7 @@ Commands:
 
 #### Services LoadBalancer
 
-![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/Core%20Concepts/assets/image12.svg)
+![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/assets/image12.svg)
 
 Typical solution:
 
@@ -904,6 +904,3 @@ kubectl create service nodeport nginx --tcp=80:80 --node-port=30080 --dry-run=cl
 
 
 Both the above commands have their own challenges. While one of it cannot accept a selector the other cannot accept a node port. I would recommend going with the `kubectl expose` command. If you need to specify a node port, generate a definition file using the same command and manually input the `nodeport` before creating the service.
-
- w
-

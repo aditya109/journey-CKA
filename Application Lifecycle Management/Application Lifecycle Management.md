@@ -31,7 +31,7 @@
 
 ### Rollout and Versioning
 
-![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/Application Lifecycle Management/assets/rollouts.svg)
+![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/assets/rollouts.svg)
 
 Suppose we have multiple sets of applications running in our cluster, and let's say we are on *version* `Revision 1` of the application. We now have to upgrade all of those running applications to `Revision 2`. The process of upgrading all our running applications to required version is called **rollout**.
 
@@ -54,11 +54,11 @@ The above command shows the revisions and history of our deployment.
 There are popularly 2 strategies used in deployments:
 
 - Bring all 4 instances of our application down, and then bring 4 new instances up to replace them. This is called **Recreate** strategy.
-  ![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/Application Lifecycle Management/assets/st1.svg)
+  ![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/assets/st1.svg)
   The problem with this strategy is if something goes wrong in the update process, we neither have any running instances to cater to existing users, nor do we have the new instances, (as the something could have gone wrong, or amidst update process), there is no running instance for catering users, which is really **BFB** (Bad for Business).
 
 - Bring alternative instances of our application down, while keeping the left-out instances running on older version, and then bring new instances to replace downed instances. This is called **Rolling Update** strategy.
-  ![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/Application Lifecycle Management/assets/st2.svg)
+  ![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/assets/st2.svg)
 
 ### How to apply an update ??
 
@@ -747,11 +747,7 @@ Let's say that we're moving towards a zero-trust security model and we'd like li
 
 Initial idea would be to do TLS termination with an `nginx ingress`, since the ingress is the component routing the external traffic in the cluster, but that won't meet the requirements, as traffic between the `ingress` pod and the `elasticsearch` pod could go over the external traffic in the cluster.
 
-![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/Application%20Lifecycle%20Management/assets/dr.svg)
-
-
-
-The solution that will meet the requirements is to tack an nginx proxy container onto the pod that will listen over TLS.
+The solution that will meet the requirements is to tack an `nginx` proxy container onto the pod that will listen over TLS.
 
 ```yaml
 # es-deployment-v1.1.yml

@@ -4,7 +4,7 @@
 
 ## OS Upgrades
 
-![](D:\Work\aditya109\learning-myself\learning-k8s\5. Cluster Maintenance\assets\ClusterMaintantence.svg)
+![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/assets/ClusterMaintantence.svg)
 
 For a cluster upgrade, if normally the node goes down for maintenance and comes back online within 5 minutes, nothing happens, but if not so the pods are terminated on the node. If the pods were part of a `ReplicaSet`, the time it takes for coming back online is **pod-eviction-timeout**.
 
@@ -72,13 +72,13 @@ So, let's `kube-apiserver` is a version x, then `controller-manager` and `kube-s
 The cluster upgrade process starts with the following steps:
 
 1. First the master is brought down and upgraded.
-   ![](D:\Work\aditya109\learning-myself\learning-k8s\5. Cluster Maintenance\assets\ClusterMaintantence-Cluster upgrade.svg)
+   ![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/assets/ClusterMaintantence-Cluster upgrade.svg)
 
 2. Now, to upgrade the worker nodes, we have 5 strategies:
 
    1. **Recreate Strategy**- A deployment defined with a strategy of type Recreate will terminate all the running instances then recreate them with the newer version.
 
-      ![](D:\Work\aditya109\learning-myself\learning-k8s\5. Cluster Maintenance\assets\ClusterMaintantence-Cluster upgrade-recreate.svg)
+      ![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/assets/ClusterMaintantence-Cluster upgrade-recreate.svg)
 
       The problem with this approach is at any point of time we don't have any worker instance running, which leads to downtime.
 
