@@ -2,6 +2,15 @@
 
 ## Contents
 
+- [OS Upgrades](#os-upgrades)
+- [Kubernetes Software Versions](#kubernetes-software-versions)
+- [Cluster Upgrade Process](#cluster-upgrade-process)
+  * [The Process](#the-process)
+- [Backup and Restore Methodologies](#backup-and-restore-methodologies)
+- [Working with ETCDCTL](#working-with-etcdctl)
+
+<small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
+
 ## OS Upgrades
 
 ![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/assets/ClusterMaintantence.svg)
