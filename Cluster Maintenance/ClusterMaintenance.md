@@ -81,32 +81,47 @@ So, let's `kube-apiserver` is a version x, then `controller-manager` and `kube-s
 The cluster upgrade process starts with the following steps:
 
 1. First the master is brought down and upgraded.
-   ![](<https://raw.githubusercontent.com/aditya109/learning-k8s/main/assets/ClusterMaintantence-Cluster upgrade.svg>)
+   ![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/assets/ClusterMaintantence-Cluster upgrade.svg)
 
 2. Now, to upgrade the worker nodes, we have 5 strategies:
-
+   Reference link here: [Kubernetes deployment strategies (container-solutions.com)](https://blog.container-solutions.com/kubernetes-deployment-strategies)
+   
    1. **Recreate Strategy**- A deployment defined with a strategy of type Recreate will terminate all the running instances then recreate them with the newer version.
-
+   
       ![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/assets/ClusterMaintantence-Cluster upgrade-recreate.svg)
-
+   
       The problem with this approach is at any point of time we don't have any worker instance running, which leads to downtime.
-
+   
       ```yaml
       spec:
         replicas: 3
         strategy:
           type: Recreate
       ```
-
-      [Kubernetes deployment strategies (container-solutions.com)](https://blog.container-solutions.com/kubernetes-deployment-strategies)
-
-   2. ****
-
-   3. 
-
+   
+   2. **Ramped - slow rollout** - A ramped deployment updates the pods in a rolling update fashion, a secondary `ReplicaSet` is created with the new version of the application, then the number of the old version is decreased and the new version is increased until the correct number of replicas is reached.
+   
+      ![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/assets/Ramped-slow%20rollout.svg)
+   
+      ```yaml
+      spec:
+      	replicas: 3
+      	strategy:
+      		type: RollingUpdate
+      		rollingUpdate:
+      			maxSurge: 2    # how many pods we can add at a time
+                  maxUnavailable: 0	# maxUnavailable define how many pods can be unavailable during the rolling update
+      ```
+   
+      | Pros                                                         | Cons                             |
+      | ------------------------------------------------------------ | -------------------------------- |
+      | version is slowly released across instances                  | rollout/rollback can take time   |
+      | convenient for stateful applications that can handle rebalancing of the data | supporting multiple APIs is hard |
+      |                                                              | no control over traffic          |
+   
+   3. **Blue/Green - best to avoid API versioning issues** - A blue/green deployment differs from a ramped deployment because the *green* version of the application is deployed alongside the *blue version*. After testing the new version meets the requirements, we update the Kubernetes service object that plays the role of load balancer to send traffic to the new version by replacing the version label in the selector field.
+   
    4. 
-
-   5. 
 
 
 ## Backup and Restore Methodologies
