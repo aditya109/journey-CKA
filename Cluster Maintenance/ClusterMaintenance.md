@@ -121,7 +121,36 @@ The cluster upgrade process starts with the following steps:
    
    3. **Blue/Green - best to avoid API versioning issues** - A blue/green deployment differs from a ramped deployment because the *green* version of the application is deployed alongside the *blue version*. After testing the new version meets the requirements, we update the Kubernetes service object that plays the role of load balancer to send traffic to the new version by replacing the version label in the selector field.
    
-   4. 
+      ![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/assets/strategy-Canary.svg)
+   
+      In the following example we use two `ReplicaSets` side by side, version A with three replicas (75% of the traffic), version B with one replica (25% of the traffic).
+      Truncated deployment manifest version A:
+   
+      ```yaml
+      spec:
+        replicas: 3
+      ```
+   
+      Truncated deployment manifest version B, note that we only start one replica of the application:
+   
+      ```yaml
+      spec:
+        replicas: 1
+      ```
+   
+      | Pros                                                 | Cons                                                         |
+      | ---------------------------------------------------- | ------------------------------------------------------------ |
+      | version released for a subset of users               | slow rollout                                                 |
+      | convenient for error rate and performance monitoring | fine tuned traffic distribution can be expensive (99% A/ 1% B = 99 pod A, 1 pod B) |
+   
+      The procedure used above is Kubernetes native, we adjust the number of replicas managed by a `ReplicaSet` to distribute the traffic amongst the versions.
+   
+      If you are not confident about the impact that the release of a new feature might have on the stability of the platform, a canary release strategy is suggested.
+   
+   4. **A/B testing  - best for feature testing on a subset of users** - A/B testing is really a technique for making business decisions based on statistics, rather than a deployment strategy. However, it is related and can be implemented using a canary deployment.
+      In addition to distributing traffic amongst versions based on weight, you can precisely target a given pool of users based on a few parameters (cookie, user agent, etc.,). This technique is widely used to test conversion of a given feature that converts the most.
+      Istio, like other service meshes, provides a fine-grained way to subdivide service instances with dynamic request routing  based on weights and/or HTTP headers.
+      
 
 
 ## Backup and Restore Methodologies
