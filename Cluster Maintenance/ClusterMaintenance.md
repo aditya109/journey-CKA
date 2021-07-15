@@ -150,7 +150,7 @@ The cluster upgrade process starts with the following steps:
    4. **A/B testing  - best for feature testing on a subset of users** - A/B testing is really a technique for making business decisions based on statistics, rather than a deployment strategy. However, it is related and can be implemented using a canary deployment.
       In addition to distributing traffic amongst versions based on weight, you can precisely target a given pool of users based on a few parameters (cookie, user agent, etc.,). This technique is widely used to test conversion of a given feature that converts the most.
       Istio, like other service meshes, provides a fine-grained way to subdivide service instances with dynamic request routing  based on weights and/or HTTP headers.
-      
+      ![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/assets/ClusterMaintantence-a_b%20testing%20strategy.svg)
 
 
 ## Backup and Restore Methodologies
