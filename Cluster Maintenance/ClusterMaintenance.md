@@ -81,7 +81,7 @@ So, let's `kube-apiserver` is a version x, then `controller-manager` and `kube-s
 The cluster upgrade process starts with the following steps:
 
 1. First the master is brought down and upgraded.
-   ![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/assets/ClusterMaintantence-Cluster upgrade.svg)
+   ![](<https://raw.githubusercontent.com/aditya109/learning-k8s/main/assets/ClusterMaintantence-Cluster upgrade.svg>)
 
 2. Now, to upgrade the worker nodes, we have 5 strategies:
 
