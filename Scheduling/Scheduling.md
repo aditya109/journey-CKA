@@ -714,9 +714,3 @@ kubectl logs my-custom-scheduler --name-space=kube-system
    - ```powershell
      kubectl create -f my-scheduler.yaml 
      ```
-
-     
-
- 
-
- 
