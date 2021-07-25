@@ -225,7 +225,6 @@ kubectl uncordon node-1
 > kubectl -n kube-system get cm kubeadm-config -oyaml
 > ```
 >
-> 
 
 ## Backup and Restore Methodologies
 
