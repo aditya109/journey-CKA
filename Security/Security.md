@@ -562,9 +562,16 @@ In order to secure servers, we would have to use a combination of symmetric and 
 
 Ok, let's roll back. Now taking the same example and assuming the communication channel is compromised.
 
+![](https://github.com/aditya109/learning-k8s/blob/main/assets/asymmetric_enc-bank-server-1.svg?raw=true)
 
+First, the bank server generate their own public and private keys.
 
-
+```bash
+> openssl genrsa -out my-bank.key 1024
+my-bank.key # public bank key
+> openssl rsa -in my-bank.key -pubout > mybank.pem
+my-bank.key mybank.pem # later one is private bank key
+```
 
 
 
