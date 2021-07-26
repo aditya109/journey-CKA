@@ -573,7 +573,15 @@ my-bank.key # public bank key
 my-bank.key mybank.pem # later one is private bank key
 ```
 
+![](https://github.com/aditya109/learning-k8s/blob/main/assets/bank-server-access-2.png?raw=true)
 
+Then, the bank sends the public key over the channel to the user, assuming that sniffer has already taken the copy of bank server public key.
+
+The browser of the host then takes its generated symmetric key and encrypts it using the bank public key.
+
+Now this encrypted chunk is sent over the channel, again assuming that sniffer has already taken the copy of encrypted chunk, but can do nothing as they only have bank server public key, and not their private key.
+
+The bank receives the encrypted chunk and decrypts it using the bank server private key and gets the host's symmetric key.
 
 
 
