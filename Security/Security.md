@@ -516,7 +516,19 @@ default-token-rnpqs    kubernetes.io/service-account-token   3      25h
 
 ### TLS Basics
 
+#### Symmetric Encryption
 
+![](https://github.com/aditya109/learning-k8s/blob/main/assets/symmetric_enc.png?raw=true)
+
+Here both the ends, sender and receiver use the same encryption keys for encoding and decoding which is shared over the same medium(which is considered *compromised*), meaning any sniffer in between will receive the cipher text as well as the key. This makes the encryption very insecure.
+
+#### Asymmetric Encryption
+
+![](https://github.com/aditya109/learning-k8s/blob/main/assets/asymmetric_enc.png?raw=true)
+
+Here, there are 2 keys - private key and public key.
+
+The *public key* can encode the text, which can only be decoded by the *private key*. 
 
 
 
