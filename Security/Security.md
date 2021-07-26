@@ -530,6 +530,40 @@ Here, there are 2 keys - private key and public key.
 
 The *public key* can encode the text, which can only be decoded by the *private key*. 
 
+##### Using Asymmetric Encryption to access cloud servers securely
+
+Let assume there are 2 servers, `Server-1` and `Server-2`.
+
+For any user `root`/`admin`, in order to access the servers, the user has to first create private and public keys.
+
+```bash
+> ssh-keygen
+id_rsa id_rsa.pub
+```
+
+The user then has to place the public key into `~\.ssh\authorized_keys` directory.
+
+Now in order to log into the server, the user has to pass the location of private key present in his computer.
+
+```bash
+ssh -i id_rsa admin@server1
+Successfully logged in !
+```
+
+If another user wants to access the same servers, the `admin` user can place the their public keys in the same location `~\.ssh\authorized_keys` location, now the user can access the server in a similar manner.
+
+![](https://github.com/aditya109/learning-k8s/blob/main/assets/asymmetric_enc-asym_enc.svg?raw=true)
+
+### Accessing secure servers (bank)
+
+As mentioned in [Symmetric Encryption](#Symmetric Encryption), this method alone would not have worked to secure the servers.
+
+In order to secure servers, we would have to use a combination of symmetric and asymmetric encyption.
+
+Ok, let's roll back. Now taking the same example and assuming the communication channel is compromised.
+
+
+
 
 
 
@@ -550,7 +584,7 @@ The *public key* can encode the text, which can only be decoded by the *private 
 
 ## Certificates API
 
-## KubeConfig
+## kube-config
 
 ## Persistent Key/Value Store
 
