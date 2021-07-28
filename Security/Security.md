@@ -593,7 +593,9 @@ But, the FME understands this trick. He comes up with an exact replica of the ba
 
 
 
+But we can actually identify this sniffer. The key which the any server sends is contained within a certificate. It is an actual certificate but in digital form. Naturally, the certificates are signed but that is how you can validate or in-validate the server. 
 
+A certificate generated a FEM entity would be self-signed, and not signed by a certified authority. 
 
 
 
