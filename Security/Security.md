@@ -564,7 +564,9 @@ Ok, let's roll back. Now taking the same example and assuming the communication 
 
 ![](https://github.com/aditya109/learning-k8s/blob/main/assets/asymmetric_enc-bank-server-1.svg?raw=true)
 
-First, the bank server generate their own public and private keys.
+First, the browser encrypts the user's credentials using some symmetric key and sends it over the compromised line. The sniffer now has the encrypted credentials but can do nothing as they do not have the symmetric key.
+
+Then, the bank server generates their own public and private keys.
 
 ```bash
 > openssl genrsa -out my-bank.key 1024
@@ -579,9 +581,17 @@ Then, the bank sends the public key over the channel to the user, assuming that 
 
 The browser of the host then takes its generated symmetric key and encrypts it using the bank public key.
 
+![](https://github.com/aditya109/learning-k8s/blob/main/assets/bank-server-access-3.png?raw=true)
+
 Now this encrypted chunk is sent over the channel, again assuming that sniffer has already taken the copy of encrypted chunk, but can do nothing as they only have bank server public key, and not their private key.
 
 The bank receives the encrypted chunk and decrypts it using the bank server private key and gets the host's symmetric key.
+
+![](https://github.com/aditya109/learning-k8s/blob/main/assets/bank-server-access-4.png?raw=true)
+
+But, the FME understands this trick. He comes up with an exact replica of the bank's website, and presents it to the user asking them to type out their credentials. He wants the user to think that the website is legit so he generates his own public and private key-pair and configures it on his own server, also somehow manages to tweak the user's environment to re-route requests going from the actual bank servers to his own servers.
+
+
 
 
 
