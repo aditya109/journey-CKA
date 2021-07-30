@@ -797,6 +797,58 @@ We will need to provide `ca.crt` within every component of Kubernetes cluster.
 
 `etcd` clusters usually have their separate CA deployed for peer-to-peer validation which is provided in `etcd.yaml`.
 
+What about `kube-api-server` and its aliases ?
+
+The commonly used aliases `kubernetes`, `kubernetes.default`, `kubernetes.default.svc` and `kubernetes.default.svc.cluster.local`. Also many refer to it with its IP address as well. All of which should be present in certificates.
+
+What about the aliases ??
+
+For that we create an configuration file for `openssl`.
+
+```yaml
+[req]
+req_extensions = v3_req
+[v3_req]
+basicContraints = CA:FALSE
+keyUsage = nonRepudiation
+subjectAltName = @alt_names
+[alt_names]
+DNS.1 = kubernetes
+DNS.2 = kubernetes.default
+DNS.3 = kubernetes.default.svc
+DNS.4 = kubernetes.default.svc.cluster.local
+IP.1 = 10.96.0.1
+IP.2 = 172.17.0.87
+```
+
+
+
+```bash
+# generate the private key
+> openssl genrsa -out apiserver.key 2048
+apiserver.key
+
+# generate the CSR
+> openssl req -new \
+			-key apiserver.key \
+			-subj "/CN=kube-apiserver" \
+			-out apiserver.csr
+			--config openssl.cnf 👈
+apiserver.csr
+
+# generate the certificate
+openssl x509 -req \
+			-in apiserver.csr \
+			-CA ca.crt \
+			-CAkey ca.key \
+            -out apiserver.crt
+ apiserver.crt
+```
+
+The location of these artifacts are passed in the creation of `kube-api-server` creation.
+
+
+
 
 
 
