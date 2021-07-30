@@ -692,7 +692,7 @@ client-key.pem
 
 The CA can also be setup within our Kubernetes cluster, which also has its own `ca.crt` and `ca.key`.
 
-## View Certificate Details
+## TLS in Kubernetes - Certificate Creation
 
 To generate certificates,we can use the following tools:
 
@@ -795,7 +795,17 @@ users:
 
 We will need to provide `ca.crt` within every component of Kubernetes cluster.
 
+`etcd` clusters usually have their separate CA deployed for peer-to-peer validation which is provided in `etcd.yaml`.
 
+
+
+
+
+ 
+
+
+
+## View Certificate Details
 
 
 
