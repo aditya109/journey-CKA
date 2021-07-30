@@ -3,28 +3,32 @@
 ## Contents
 
 - [Kubernetes Security Primitives](#kubernetes-security-primitives)
-  - [How to secure clusters?](#how-to-secure-clusters-)
-    - [Step 1 : Defining who can access ?](#step-1---defining-who-can-access--)
-    - [Step 2 : Once access is granted, defining what can they do ?](#step-2---once-access-is-granted--defining-what-can-they-do--)
+  * [How to secure clusters?](#how-to-secure-clusters-)
+    + [Step 1 : Defining who can access ?](#step-1---defining-who-can-access--)
+    + [Step 2 : Once access is granted, defining what can they do ?](#step-2---once-access-is-granted--defining-what-can-they-do--)
 - [Authentication](#authentication)
-  - [How does the auth-mechanisms work for kube-apiserver?](#how-does-the-auth-mechanisms-work-for-kube-apiserver-)
-    - [Static Password Files](#static-password-files)
+  * [How does the auth-mechanisms work for kube-apiserver?](#how-does-the-auth-mechanisms-work-for-kube-apiserver-)
+    + [Static Password Files](#static-password-files)
       - [Auth Mechanisms - Basic](#auth-mechanisms---basic)
-        - [Roles and role bindings for these users](#roles-and-role-bindings-for-these-users)
-        - [To request for authentication](#to-request-for-authentication)
-    - [Static Token Files](#static-token-files)
+        * [Roles and role bindings for these users](#roles-and-role-bindings-for-these-users)
+        * [To request for authentication](#to-request-for-authentication)
+    + [Static Token Files](#static-token-files)
       - [Auth Mechanism - Basic](#auth-mechanism---basic)
-        - [To request for authentication](#to-request-for-authentication-1)
+        * [To request for authentication](#to-request-for-authentication-1)
 - [A note on Service Accounts](#a-note-on-service-accounts)
-  - [Service Account Controllers](#service-account-controllers)
-  - [Default Service Account in a Pod and privilege](#default-service-account-in-a-pod-and-privilege)
-  - [Custom service accounts](#custom-service-accounts)
+  * [Service Account Controllers](#service-account-controllers)
+  * [Default Service Account in a Pod and privilege](#default-service-account-in-a-pod-and-privilege)
+  * [Custom service accounts](#custom-service-accounts)
 - [TLS](#tls)
-  - [TLS Basics](#tls-basics)
-  - [TLS in Kubernetes](#tls-in-kubernetes)
+  * [TLS Basics](#tls-basics)
+    + [Symmetric Encryption](#symmetric-encryption)
+    + [Asymmetric Encryption](#asymmetric-encryption)
+      - [Using Asymmetric Encryption to access cloud servers securely](#using-asymmetric-encryption-to-access-cloud-servers-securely)
+  * [Accessing servers (bank)](#accessing-secure-servers--bank-)
+  * [TLS in Kubernetes](#tls-in-kubernetes)
 - [View Certificate Details](#view-certificate-details)
 - [Certificates API](#certificates-api)
-- [KubeConfig](#kubeconfig)
+- [kube-config](#kube-config)
 - [Persistent Key/Value Store](#persistent-key-value-store)
 - [API Groups](#api-groups)
 - [Authorization](#authorization)
@@ -591,17 +595,41 @@ The bank receives the encrypted chunk and decrypts it using the bank server priv
 
 But, the FME understands this trick. He comes up with an exact replica of the bank's website, and presents it to the user asking them to type out their credentials. He wants the user to think that the website is legit so he generates his own public and private key-pair and configures it on his own server, also somehow manages to tweak the user's environment to re-route requests going from the actual bank servers to his own servers.
 
+![](https://github.com/aditya109/learning-k8s/blob/main/assets/certificate.png?raw=true)
 
+But we can actually identify this sniffer. The key which the any server sends is contained within a certificate. It is an actual certificate but in digital form. Naturally, the certificates are signed but that is how you can validate or in-validate the server.
 
-But we can actually identify this sniffer. The key which the any server sends is contained within a certificate. It is an actual certificate but in digital form. Naturally, the certificates are signed but that is how you can validate or in-validate the server. 
+> **CERTIFICATES**
+>
+> The certificate contains all the registered alias for the website, server location and several other information, etc. Above all, the certificate generated a FEM entity would be self-signed, and not signed by a certified authority. 
+>
+> In fact, the browser does this does for us, where it directly indicates `Not secure` in the address bar, to warn us about the insecurity of the site.
+>
+> CERTIFICATE AUTHORITIES or CAs are well-known organization which can sign and validate your certificate. Popular ones are `Symmantec`,  `GlobalSign`, `DigiCert`.
+>
+> **Process of Certificate Generation**
+>
+> 1. First the generated public key is used to create something called as `Certificate Signing Request` (CSR).
+>
+>    ```bash
+>    > openssl req -new \
+>    	-key my-bank.key \
+>    	-out my.bank.csr \
+>    	-subj "/C=US/ST=CA/O=MyOrg, Inc./CN=mydomain.com"
+>    my-bank.key my-bank.csr
+>    ```
+>
+> 2. CA then validates information and once it checks out they sign the certificate and send it back to the entity sending CSR.
 
-A certificate generated a FEM entity would be self-signed, and not signed by a certified authority. 
+The sniffer's CSR would fail at validation step itself.
 
+But how would the browser validate the CA signature in the certificate ?
 
+The CAs each have their own public and private keys. The public keys of the CAs are already built into the browsers. We can actually see the certificates within Trusted Root Certification Authorities under our Browser's Settings. The CAs use their private keys to sign the certificate. The public keys of the respective CAs are then used by the browser to validate the certificate themselves.
 
+But this process works for public websites, what about the privately hosted websites ?
 
-
-
+Most of the CAs mentioned above have their `On-Prem` versions available for usage. We can deploy these CAs onto our on-prem  servers, which can then be used to validate and sign certificates. These private CAs will then create public and private keys and public keys of these CAs will be manually installed on the browsers of the associated employees.
 
 
 
