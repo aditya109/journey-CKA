@@ -24,7 +24,7 @@
     + [Symmetric Encryption](#symmetric-encryption)
     + [Asymmetric Encryption](#asymmetric-encryption)
       - [Using Asymmetric Encryption to access cloud servers securely](#using-asymmetric-encryption-to-access-cloud-servers-securely)
-  * [Accessing servers (bank)](#accessing-secure-servers--bank-)
+  * [Accessing secure bank servers](#accessing-secure-bank-servers)
   * [TLS in Kubernetes](#tls-in-kubernetes)
 - [View Certificate Details](#view-certificate-details)
 - [Certificates API](#certificates-api)
@@ -558,7 +558,7 @@ If another user wants to access the same servers, the `admin` user can place the
 
 ![](https://github.com/aditya109/learning-k8s/blob/main/assets/asymmetric_enc-asym_enc.svg?raw=true)
 
-### Accessing secure servers (bank)
+#### Accessing secure bank servers
 
 As mentioned in [Symmetric Encryption](#Symmetric Encryption), this method alone would not have worked to secure the servers.
 
@@ -664,21 +664,142 @@ client.key
 client-key.pem
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
 ### TLS in Kubernetes
 
+#### Server Certificates for Servers
+
+*The names may vary for cluster-setup to cluster-setup.*
+
+| Component       | Certificate (Public Key) | Private Key    |      |
+| --------------- | ------------------------ | -------------- | ---- |
+| kube-api-server | apiserver.crt            | apiserver.key  |      |
+| etcd-server     | etcdserver.crt           | etcdserver.key |      |
+| kubelet-server  | kubelet.crt              | kubelet.key    |      |
+
+#### Client Certificates for Clients
+
+*The names may vary for cluster-setup to cluster-setup.*
+
+| Component                                         | Certificate (Public Key)     | Private Key                  |
+| ------------------------------------------------- | ---------------------------- | ---------------------------- |
+| admin (for `kubectl` REST API)                    | admin.crt                    | admin.key                    |
+| kube-scheduler  (for `kubectl` REST API)          | scheduler.crt                | scheduler.key                |
+| kube-controller-manager  (for `kubectl` REST API) | controller-manager.crt       | controller-manager.key       |
+| kube-proxy  (for `kubectl` REST API)              | kube-proxy.crt               | kube-proxy.key               |
+| kube-api-server (for talking to etcd-server)      | apiserver-etcd-client.crt    | apiserver-etcd-client.key    |
+| kube-api-server (for talking to kublet-server)    | apiserver-kubelet-client.crt | apiserver-kubelet-client.key |
+| kubelet-server (as a client)                      | kubelet-client.crt           | kubelet-client.key           |
+
+The CA can also be setup within our Kubernetes cluster, which also has its own `ca.crt` and `ca.key`.
+
 ## View Certificate Details
+
+To generate certificates,we can use the following tools:
+
+- EASYRSA
+- OPENSSL
+- CFSSL
+
+### TLS Certificate Generation
+
+**Kubernetes CA**
+
+Step 1: We will **generate a private key** for Kubernetes CA.
+
+```bash
+> openssl genrsa -out ca.key 2048
+ca.key
+```
+
+Step 2: We **generate a CSR** for Kubernetes CA.
+
+```bash
+> openssl req -new -key ca.key -subj "/CN=KUBERNETES-CA" -out ca.csr
+ca.csr
+```
+
+Step 3: We sign certificates using `ca.key` generated in Step 1.
+
+```bash
+> openssl x509 -req -in ca.csr -signkey ca.key -out ca.crt
+ca.crt
+```
+
+**Admin User**
+
+Step 4: We will **generate a private key** for Admin User.
+
+```bash
+> openssl genrsa -out admin.key 2048
+admin.key
+```
+
+Step 5: We **generate a CSR** for Kubernetes CA.
+
+```bash
+> openssl req -new \
+				-key admin.key \
+				-subj "/CN=kube-admin/O=system:masters" \ 
+# the above O=system:masters specifies the group to which the client belongs to
+				-out admin.csr
+admin.csr
+```
+
+Step 6: We sign certificates using `ca.key` generated in Step 1.
+
+```bash
+> openssl x509 -req -in admin.csr -CA ca.key -CAkey ca.key -out admin.crt
+admin.crt
+```
+
+> We follow the same process to generate all the client certificates.
+>
+> For kube-controlplane components, we have to prefix `system:` to the name in Step 5. For example, for `kube-proxy`.
+>
+> ```bash
+> > openssl req -new \
+> 				-key admin.key \
+> 				-subj "/CN=system:kube-proxy/O=system:masters" \ 
+> # the above O=system:masters specifies the group to which the client belongs to
+> 				-out admin.csr
+> admin.csr
+> ```
+
+But what to do with generate admin certificates ?
+
+We can directly make a request to `kube-api-server` using `admin.key`, `admin.crt` and `ca.crt`.
+
+```bash
+curl https://kube-apiserver:6443/api/v1/pods \	
+		--key admin.key \
+		--cert admin.crt \
+		--cacert ca.crt
+```
+
+We can also create `kube-config.yaml` within the cluster setup.
+
+```yaml
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority: ca.crt
+    server: https://kube-apiserver:6443
+  name: kubernetes
+kind: Config
+users:
+- name: kubernetes-admin
+  user:
+    client-certificate: admin.crt
+    client-key: admin.key
+```
+
+We will need to provide `ca.crt` within every component of Kubernetes cluster.
+
+
+
+
+
+
 
 ## Certificates API
 
