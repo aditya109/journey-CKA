@@ -631,6 +631,24 @@ But this process works for public websites, what about the privately hosted webs
 
 Most of the CAs mentioned above have their `On-Prem` versions available for usage. We can deploy these CAs onto our on-prem  servers, which can then be used to validate and sign certificates. These private CAs will then create public and private keys and public keys of these CAs will be manually installed on the browsers of the associated employees.
 
+Finally this is how the bank server authentication looks like from Client-To-Server perspective.
+
+![](https://github.com/aditya109/learning-k8s/blob/main/assets/bank-server-access-5.png?raw=true)
+
+> *But how would client authentication look like from Server-To-Client perspective?*
+>
+> The client also generate CSR with their public key, which is sent to bank servers, ensuring that their request is legit.
+>
+> 
+
+
+
+
+
+
+
+
+
 
 
 ### TLS in Kubernetes
