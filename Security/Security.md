@@ -639,7 +639,32 @@ Finally this is how the bank server authentication looks like from Client-To-Ser
 >
 > The client also generate CSR with their public key, which is sent to bank servers, ensuring that their request is legit.
 >
-> 
+> ![](https://github.com/aditya109/learning-k8s/blob/main/assets/bank-server-access-6.png?raw=true)
+
+This entire infrastructure used for building authentication is known as **Public Key Instructure (PKI)**.
+
+#### Naming Conventions for the keys
+
+Public keys come with extension either with `*.crt` or `*.pem`. 
+For example,
+
+```bash
+server.crt
+server.pem
+client.crt
+client.pem
+```
+
+Private keys come with extension either with `*.key` or `*-key.pem`. For example,
+
+```bash
+server.key
+server-key.pem
+client.key
+client-key.pem
+```
+
+
 
 
 
