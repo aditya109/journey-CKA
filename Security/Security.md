@@ -24,9 +24,15 @@
     + [Symmetric Encryption](#symmetric-encryption)
     + [Asymmetric Encryption](#asymmetric-encryption)
       - [Using Asymmetric Encryption to access cloud servers securely](#using-asymmetric-encryption-to-access-cloud-servers-securely)
-  * [Accessing secure bank servers](#accessing-secure-bank-servers)
+    + [Accessing secure bank servers](#accessing-secure-bank-servers)
+    + [Naming Conventions for the keys](#naming-conventions-for-the-keys)
   * [TLS in Kubernetes](#tls-in-kubernetes)
+    + [Server Certificates for Servers](#server-certificates-for-servers)
+    + [Client Certificates for Clients](#client-certificates-for-clients)
+- [TLS in Kubernetes - Certificate Creation](#tls-in-kubernetes---certificate-creation)
+  * [TLS Certificate Generation](#tls-certificate-generation)
 - [View Certificate Details](#view-certificate-details)
+  * [Performing Certificate Health Check](#performing-certificate-health-check)
 - [Certificates API](#certificates-api)
 - [kube-config](#kube-config)
 - [Persistent Key/Value Store](#persistent-key-value-store)
@@ -797,6 +803,8 @@ We will need to provide `ca.crt` within every component of Kubernetes cluster.
 
 `etcd` clusters usually have their separate CA deployed for peer-to-peer validation which is provided in `etcd.yaml`.
 
+![](https://github.com/aditya109/learning-k8s/blob/main/assets/etcd.png?raw=true)
+
 What about `kube-api-server` and its aliases ?
 
 The commonly used aliases `kubernetes`, `kubernetes.default`, `kubernetes.default.svc` and `kubernetes.default.svc.cluster.local`. Also many refer to it with its IP address as well. All of which should be present in certificates.
@@ -847,21 +855,151 @@ openssl x509 -req \
 
 The location of these artifacts are passed in the creation of `kube-api-server` creation.
 
+![](https://github.com/aditya109/learning-k8s/blob/main/assets/kuebapiserver.png?raw=true)
 
+Now, for `kubelet` server certificates. The names passed onto CSR for the servers is same as respective nodes' names not `kubelet` and finally pass these onto `kubelet` config files.
 
+```yaml
+kind: KubeletConfiguration
+apiVersion: kubelet.config.k8s.io./v1beta1
+authentication:
+  x509:
+    clientCAFile: "/var/lib/kubernetes/ca.pem"
+authorization:
+  mode: Webhook
+clusterDomain: "cluster.local"
+clusterDNS:
+  - "10.32.0.10"
+podCIDR: "${POD_CIDR}"
+resolvConf: "/run/systemd/resolve/resolv.conf"
+runtimeRequestTimeout: "15m"
+tlsCertFile: "/var/lib/kubelet/kubelet-node01.crt"
+tlsPrivateKeyFile: "/var/lib/kubelet/kubelet-node01.key"
+```
 
+**Client Certificates for `kubelet`**
 
-
-
- 
-
-
+These are used by the `kubelet` to authenticate the `kube-apiserver`. The certificates need to have the node name in the following format `system:node:node01` with group as `SYSTEM:NODES`.
 
 ## View Certificate Details
 
+### Performing Certificate Health Check
 
+1. First find out how was the cluster deployed.
 
+   1. *the hard way* - `cat /etc/systemd/system/kube-apiserver.service`
+   2. *using kubeadm* - `cat /etc.kubernetes/manifests/kube-apiserver.yaml`
 
+2. Find the location of the required certificates in the cluster.
+
+   | Component        |        Type        | Certificate Path | CN Name | ALT Name | Organization | Issuer | Expiration |
+   | ---------------- | :----------------: | :--------------: | :-----: | :------: | ------------ | ------ | ---------- |
+   | `kube-apiserver` |       Server       |                  |         |          |              |        |            |
+   | `kube-apiserver` |       Server       |                  |         |          |              |        |            |
+   | `kube-apiserver` |       Server       |                  |         |          |              |        |            |
+   | `kube-apiserver` | Client (`kubelet`) |                  |         |          |              |        |            |
+   | `kube-apiserver` | Client (`kubelet`) |                  |         |          |              |        |            |
+   | `kube-apiserver` |  Client (`etcd`)   |                  |         |          |              |        |            |
+   | `kube-apiserver` |  Client (`etcd`)   |                  |         |          |              |        |            |
+   | `kube-apiserver` |  Client (`etcd`)   |                  |         |          |              |        |            |
+
+```yaml
+# kube-apiserver.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    component: kube-apiserver
+    tier: control-plane
+  name: kube-apiserver
+  namespace: kube-system
+spec:
+  containers:
+  - command:
+    - /bin/sh
+    - -c
+    - exec /usr/local/bin/kube-apiserver --v=2
+      --cloud-config=/etc/gce.conf
+      --address=127.0.0.1
+      --allow-privileged=true
+      --cloud-provider=gce
+      # 👇
+      --client-ca-file=/etc/srv/kubernetes/pki/ca-certificates.crt 
+      --etcd-servers=http://127.0.0.1:2379
+      --etcd-servers-overrides=/events#http://127.0.0.1:4002
+      --secure-port=443
+      # 👇
+      --tls-cert-file=/etc/srv/kubernetes/pki/apiserver.crt 
+      # 👇
+      --tls-private-key-file=/etc/srv/kubernetes/pki/apiserver.key 
+      --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname
+      --requestheader-client-ca-file=/etc/srv/kubernetes/pki/aggr_ca.crt
+      --requestheader-allowed-names=aggregator
+      --requestheader-extra-headers-prefix=X-Remote-Extra-
+      --requestheader-group-headers=X-Remote-Group
+      --requestheader-username-headers=X-Remote-User
+      --proxy-client-cert-file=/etc/srv/kubernetes/pki/proxy_client.crt
+      --proxy-client-key-file=/etc/srv/kubernetes/pki/proxy_client.key
+      --enable-aggregator-routing=true
+      --tls-cert-file=/etc/srv/kubernetes/pki/apiserver.crt
+      --tls-private-key-file=/etc/srv/kubernetes/pki/apiserver.key
+      # 👇
+      --kubelet-client-certificate=/etc/srv/kubernetes/pki/apiserver-client.crt  	   # 👇
+      --kubelet-client-key=/etc/srv/kubernetes/pki/apiserver-client.key
+      --service-account-key-file=/etc/srv/kubernetes/pki/serviceaccount.crt
+      --token-auth-file=/etc/srv/kubernetes/known_tokens.csv
+      --basic-auth-file=/etc/srv/kubernetes/basic_auth.csv
+      --storage-backend=etcd3
+      --storage-media-type=application/vnd.kubernetes.protobuf
+      --etcd-compaction-interval=150s
+      --target-ram-mb=180
+      --service-cluster-ip-range=10.51.240.0/20
+      --audit-policy-file=/etc/audit_policy.config
+      --audit-webhook-mode=batch
+      --audit-webhook-config-file=/etc/audit_webhook.config
+      --admission-control=NamespaceLifecycle,LimitRanger,ServiceAccount,PersistentVolumeLabel,DefaultStorageClass,DefaultTolerationSeconds,NodeRestriction,ExtendedResourceToleration,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota
+      --runtime-config=api/all=true
+      --advertise-address=33.3.3.3
+      --ssh-user=zorp
+      --ssh-keyfile=/etc/srv/sshproxy/.sshkeyfile
+      --authentication-token-webhook-config-file=/etc/gcp_authn.config
+      --authorization-webhook-config-file=/etc/gcp_authz.config
+      --authorization-mode=Node,RBAC,Webhook
+      --allow-privileged=true 1>>/var/log/kube-apiserver.log
+      2>&1
+    image: k8s.gcr.io/kube-apiserver:v1.9.7
+    ... 
+    ...
+```
+
+Let's decode the server certificate of `kube-apiserver` .
+
+```bash
+> openssl x509 -in /etc/srv/kubernetes/pki/apiserver.crt -text -noout
+```
+
+Note the following fields:
+
+- `Certificate` > `Signature Algorithm` > `Validity` : `Not After`
+- `Certificate` > `Signature Algorithm` > `Subject`
+- `Certificate` > `Signature Algorithm` > `X509v3 extensions` > `X509v3 Subject Alternative Name`
+- `Certificate` > `Signature Algorithm` > `Issuer`
+
+**Inspect Service Logs**
+
+```bash
+> journalctl -u etcd.service -l
+```
+
+**View Logs** (for `kubeadm` setup)
+
+```bash
+> kubectl logs etcd-master
+```
+
+> Sometimes, if the core components like `kube-apiserver`, `etcd-server` are down, the `kubectl` command won't work.
+>
+> Then, it might be required to delve one level deeper into the 
 
 ## Certificates API
 
@@ -884,3 +1022,6 @@ The location of these artifacts are passed in the creation of `kube-api-server` 
 ## Network Policy
 
 ## Developing network policies
+
+[Back to Contents ⬆](#Contents)
+
