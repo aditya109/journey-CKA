@@ -33,7 +33,7 @@
   * [TLS Certificate Generation](#tls-certificate-generation)
 - [View Certificate Details](#view-certificate-details)
   * [Performing Certificate Health Check](#performing-certificate-health-check)
-- [Certificates API](#certificates-api)
+- [Certificates API and Workflow](#certificates-api-and-workflow)
 - [kube-config](#kube-config)
 - [Persistent Key/Value Store](#persistent-key-value-store)
 - [API Groups](#api-groups)
@@ -987,27 +987,434 @@ Note the following fields:
 
 **Inspect Service Logs**
 
-```bash
-> journalctl -u etcd.service -l
+```powershell
+> journalctl -u etcd.service -l # for from scratch setup 
 ```
 
-**View Logs** (for `kubeadm` setup)
+**View Logs** 
 
-```bash
-> kubectl logs etcd-master
+```powershell
+> kubectl logs etcd-master # for `kubeadm` setup
 ```
 
 > Sometimes, if the core components like `kube-apiserver`, `etcd-server` are down, the `kubectl` command won't work.
 >
-> Then, it might be required to delve one level deeper into the 
+> Then, it might be required to delve one level deeper into the docker.
+>
+> ```powershell
+> > docker ps -a # list all the containers
+> > docker logs <pod-name>
+> ```
+>
 
-## Certificates API
+## Certificates API and Workflow
+
+Certificates API is used to sign certificates upon validation of CSRs from the CA servers. 
+This is a built-in automated solution for generating certificates for users and provide privileges, which would have otherwise been done manually.
+
+To sign a certificate, whenever a CSR is received, the following steps are followed:
+
+1. A CSR is received.
+
+   ```bash
+   > openssl genrsa -out jane.key 2048
+   jane.key
+   > openssl req 
+   			-new \
+   			-key jane.key \
+   			-subj "/CN=jane" \
+   			-out jane.csr
+   jane.csr			
+   > cat jane.csr
+   -----BEGIN CERTIFICATE REQUEST-----
+   MIICVDCCATwCAQAwDzENMAsGA1UEAwwEamFuZTCCASIwDQYJKoZIhvcNAQEBBQAD
+   ggEPADCCAQoCggEBAJybaAAaSUysnz6D0TGLs8p8Zmew9+2FH+A59pj1SSt5V8Mg
+   XjENC7/BYpSLzEueKsFqiew7MntuUKuJaK1tHwNaUGhOzLgqcdTTenZxi7kPmTdK
+   cbaxbz859d7v/T7I8BjE0EuL5VNkonwoqN69BNtMmJJOCzlvhFWDQLM/aNW1qER0
+   6zeLmbJv9la5g8jixLpLYBeuAvPm6RBkO4ncmENbboGma9/XBM/xVgviUAAqHUJX
+   AQOrhuaZSw0mKZByL/aOo85n0iBWWexB8GImFyIQOaamkUfAlnItT7k7l6odWglb
+   hUB7HuidMFL5edf7dWFUqzSBzQYIfedT20NovE8CAwEAAaAAMA0GCSqGSIb3DQEB
+   CwUAA4IBAQAdGIiJY8LQqtvST2VcZwQNCVb/Pblj9cGRhNSxAf3VYVLsmxe9k+S7
+   qXB20kEeSpN9VO0PG68bYqs+oeygemgaes5OUKZQFXU8W+OeUoN8H5F0pAmVSEcK
+   Ywzmd1oiMB85q8u99L6HTr1OQjgP1shT/MqzyAkN8CNn8CQACjiVs3Go0lvSX76V
+   59DjTphnhisRAb1KWN5ctUL46bo+HNf3vsXFSNdACcSuJm7Wjf4s2GDcjno9EarQ
+   VfAmnQxedRHif+bJ5YogkZq+FBq7Aa2P308GYlw7p8wDT2Xuy1K2nyj96de10cp/
+   UnQdIXAMV0bvMseYZCVZrVC3CzicB2jA
+   -----END CERTIFICATE REQUEST-----
+   ```
+
+2. Then a `CertificateSigningRequest` object is created, wherein the above `jane.csr` is placed in `base64` encoded format.
+
+   ```bash
+   > cat jane.csr | base64
+   LS0tLS1CRUdJTiBDRVJUSUZJQ0FURSBSRVFVRVNULS0tLS0KTUlJQ1ZEQ0NBVHdDQVFBd0R6RU5N
+   QXNHQTFVRUF3d0VhbUZ1WlRDQ0FTSXdEUVlKS29aSWh2Y05BUUVCQlFBRApnZ0VQQURDQ0FRb0Nn
+   Z0VCQUp5YmFBQWFTVXlzbno2RDBUR0xzOHA4Wm1ldzkrMkZIK0E1OXBqMVNTdDVWOE1nClhqRU5D
+   Ny9CWXBTTHpFdWVLc0ZxaWV3N01udHVVS3VKYUsxdEh3TmFVR2hPekxncWNkVFRlblp4aTdrUG1U
+   ZEsKY2JheGJ6ODU5ZDd2L1Q3SThCakUwRXVMNVZOa29ud29xTjY5Qk50TW1KSk9Demx2aEZXRFFM
+   TS9hTlcxcUVSMAo2emVMbWJKdjlsYTVnOGppeExwTFlCZXVBdlBtNlJCa080bmNtRU5iYm9HbWE5
+   L1hCTS94Vmd2aVVBQXFIVUpYCkFRT3JodWFaU3cwbUtaQnlML2FPbzg1bjBpQldXZXhCOEdJbUZ5
+   SVFPYWFta1VmQWxuSXRUN2s3bDZvZFdnbGIKaFVCN0h1aWRNRkw1ZWRmN2RXRlVxelNCelFZSWZl
+   ZFQyME5vdkU4Q0F3RUFBYUFBTUEwR0NTcUdTSWIzRFFFQgpDd1VBQTRJQkFRQWRHSWlKWThMUXF0
+   dlNUMlZjWndRTkNWYi9QYmxqOWNHUmhOU3hBZjNWWVZMc214ZTlrK1M3CnFYQjIwa0VlU3BOOVZP
+   MFBHNjhiWXFzK29leWdlbWdhZXM1T1VLWlFGWFU4VytPZVVvTjhINUYwcEFtVlNFY0sKWXd6bWQx
+   b2lNQjg1cTh1OTlMNkhUcjFPUWpnUDFzaFQvTXF6eUFrTjhDTm44Q1FBQ2ppVnMzR28wbHZTWDc2
+   Vgo1OURqVHBobmhpc1JBYjFLV041Y3RVTDQ2Ym8rSE5mM3ZzWEZTTmRBQ2NTdUptN1dqZjRzMkdE
+   Y2pubzlFYXJRClZmQW1uUXhlZFJIaWYrYko1WW9na1pxK0ZCcTdBYTJQMzA4R1lsdzdwOHdEVDJY
+   dXkxSzJueWo5NmRlMTBjcC8KVW5RZElYQU1WMGJ2TXNlWVpDVlpyVkMzQ3ppY0IyakEKLS0tLS1F
+   TkQgQ0VSVElGSUNBVEUgUkVRVUVTVC0tLS0tCg==
+   ```
+
+   ```yaml
+   # jane-key.csr
+   apiVersion: certificates.k8s.io/v1
+   kind: CertificateSigningRequest
+   metadata:
+     name: jane
+   spec:
+     groups:
+     - system:authenticated
+     usages:
+     - digital signature
+     - key encipherment
+     - server auth
+     request:
+       LS0tLS1CRUdJTiBDRVJUSUZJQ0FURSBSRVFVRVNULS0tLS0KTUlJQ1ZEQ0NBVHdDQVFBd0R6RU5NQXNHQTFVRUF3d0VhbUZ1WlRDQ0FTSXdEUVlKS29aSWh2Y05BUUVCQlFBRApnZ0VQQURDQ0FRb0NnZ0VCQUp5YmFBQWFTVXlzbno2RDBUR0xzOHA4Wm1ldzkrMkZIK0E1OXBqMVNTdDVWOE1nClhqRU5DNy9CWXBTTHpFdWVLc0ZxaWV3N01udHVVS3VKYUsxdEh3TmFVR2hPekxncWNkVFRlblp4aTdrUG1UZEsKY2JheGJ6ODU5ZDd2L1Q3SThCakUwRXVMNVZOa29ud29xTjY5Qk50TW1KSk9Demx2aEZXRFFMTS9hTlcxcUVSMAo2emVMbWJKdjlsYTVnOGppeExwTFlCZXVBdlBtNlJCa080bmNtRU5iYm9HbWE5L1hCTS94Vmd2aVVBQXFIVUpYCkFRT3JodWFaU3cwbUtaQnlML2FPbzg1bjBpQldXZXhCOEdJbUZ5SVFPYWFta1VmQWxuSXRUN2s3bDZvZFdnbGIKaFVCN0h1aWRNRkw1ZWRmN2RXRlVxelNCelFZSWZlZFQyME5vdkU4Q0F3RUFBYUFBTUEwR0NTcUdTSWIzRFFFQgpDd1VBQTRJQkFRQWRHSWlKWThMUXF0dlNUMlZjWndRTkNWYi9QYmxqOWNHUmhOU3hBZjNWWVZMc214ZTlrK1M3CnFYQjIwa0VlU3BOOVZPMFBHNjhiWXFzK29leWdlbWdhZXM1T1VLWlFGWFU4VytPZVVvTjhINUYwcEFtVlNFY0sKWXd6bWQxb2lNQjg1cTh1OTlMNkhUcjFPUWpnUDFzaFQvTXF6eUFrTjhDTm44Q1FBQ2ppVnMzR28wbHZTWDc2Vgo1OURqVHBobmhpc1JBYjFLV041Y3RVTDQ2Ym8rSE5mM3ZzWEZTTmRBQ2NTdUptN1dqZjRzMkdEY2pubzlFYXJRClZmQW1uUXhlZFJIaWYrYko1WW9na1pxK0ZCcTdBYTJQMzA4R1lsdzdwOHdEVDJYdXkxSzJueWo5NmRlMTBjcC8KVW5RZElYQU1WMGJ2TXNlWVpDVlpyVkMzQ3ppY0IyakEKLS0tLS1FTkQgQ0VSVElGSUNBVEUgUkVRVUVTVC0tLS0tCg==
+     signerName: kubernetes.io/kube-apiserver-client
+   ```
+
+   > All `CertificateSigningRequest`s can be viewed by everyone.
+
+   ```bash
+   > kubectl create -f jane-key.csr
+   certificatesigningrequest.certificates.k8s.io/jane created
+   
+   > kubectl get csr
+   ```
+
+   | NAME | AGE  | SIGNERNAME                          | REQUESTOR          | CONDITION |
+   | ---- | ---- | ----------------------------------- | ------------------ | --------- |
+   | jane | 59s  | kubernetes.io/kube-apiserver-client | docker-for-desktop | Pending   |
+
+3. The request can be reviewed and approved/denied.
+
+   ```bash
+   > kubectl certificate approve jane
+   certificatesigningrequest.certificates.k8s.io/jane approved
+   > kubectl certificate deny jane
+   certificatesigningrequest.certificates.k8s.io/jane denied
+   ```
+
+4. The certificate is then shared back to the user.
+
+   ```bash
+   > kubectl get csr jane -o yaml
+    kubectl get csr jane -o yaml
+   apiVersion: certificates.k8s.io/v1
+   kind: CertificateSigningRequest
+   metadata:
+     creationTimestamp: "2021-08-01T14:16:30Z"
+     name: jane
+     resourceVersion: "31198"
+     uid: 466161d6-a21d-482d-b75f-fed4ecea5735
+   spec:
+     groups:
+     - system:masters
+     - system:authenticated
+     request: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURSBSRVFVRVNULS0tLS0KTUlJQ1ZEQ0NBVHdDQVFBd0R6RU5NQXNHQTFVRUF3d0VhbUZ1WlRDQ0FTSXdEUVlKS29aSWh2Y05BUUVCQlFBRApnZ0VQQURDQ0FRb0NnZ0VCQUp5YmFBQWFTVXlzbno2RDBUR0xzOHA4Wm1ldzkrMkZIK0E1OXBqMVNTdDVWOE1nClhqRU5DNy9CWXBTTHpFdWVLc0ZxaWV3N01udHVVS3VKYUsxdEh3TmFVR2hPekxncWNkVFRlblp4aTdrUG1UZEsKY2JheGJ6ODU5ZDd2L1Q3SThCakUwRXVMNVZOa29ud29xTjY5Qk50TW1KSk9Demx2aEZXRFFMTS9hTlcxcUVSMAo2emVMbWJKdjlsYTVnOGppeExwTFlCZXVBdlBtNlJCa080bmNtRU5iYm9HbWE5L1hCTS94Vmd2aVVBQXFIVUpYCkFRT3JodWFaU3cwbUtaQnlML2FPbzg1bjBpQldXZXhCOEdJbUZ5SVFPYWFta1VmQWxuSXRUN2s3bDZvZFdnbGIKaFVCN0h1aWRNRkw1ZWRmN2RXRlVxelNCelFZSWZlZFQyME5vdkU4Q0F3RUFBYUFBTUEwR0NTcUdTSWIzRFFFQgpDd1VBQTRJQkFRQWRHSWlKWThMUXF0dlNUMlZjWndRTkNWYi9QYmxqOWNHUmhOU3hBZjNWWVZMc214ZTlrK1M3CnFYQjIwa0VlU3BOOVZPMFBHNjhiWXFzK29leWdlbWdhZXM1T1VLWlFGWFU4VytPZVVvTjhINUYwcEFtVlNFY0sKWXd6bWQxb2lNQjg1cTh1OTlMNkhUcjFPUWpnUDFzaFQvTXF6eUFrTjhDTm44Q1FBQ2ppVnMzR28wbHZTWDc2Vgo1OURqVHBobmhpc1JBYjFLV041Y3RVTDQ2Ym8rSE5mM3ZzWEZTTmRBQ2NTdUptN1dqZjRzMkdEY2pubzlFYXJRClZmQW1uUXhlZFJIaWYrYko1WW9na1pxK0ZCcTdBYTJQMzA4R1lsdzdwOHdEVDJYdXkxSzJueWo5NmRlMTBjcC8KVW5RZElYQU1WMGJ2TXNlWVpDVlpyVkMzQ3ppY0IyakEKLS0tLS1FTkQgQ0VSVElGSUNBVEUgUkVRVUVTVC0tLS0tCg==
+     signerName: kubernetes.io/kube-apiserver-client
+     usages:
+     - digital signature
+     - key encipherment
+     - server auth
+     username: docker-for-desktop
+   status:
+     conditions:
+     - lastTransitionTime: "2021-08-01T14:19:35Z"
+       lastUpdateTime: "2021-08-01T14:19:36Z"
+       message: This CSR was approved by kubectl certificate approve.
+       reason: KubectlApprove
+       status: "True"
+       type: Approved
+     - lastTransitionTime: "2021-08-01T14:19:35Z"
+       lastUpdateTime: "2021-08-01T14:19:35Z"
+       message: 'invalid usage for client certificate: server auth'
+       reason: SignerValidationFailure
+       status: "True"
+       type: Failed
+   ```
+
+   The `request` field value here can be extracted off and decoded to `base64`, which can be shared to the respective by the user.
+
+   ```bash
+   >  echo LS0tLS1CRUdJTiBDRVJUSUZJQ0FURSBSRVFVRVNULS0tLS0KTUlJQ1ZEQ0NBVHdDQVFBd0R6RU5NQXNHQTFVRUF3d0V......hlZFJIaWYrYko1WW9na1pxK0ZCcTdBYTJQMzA4R1lsdzdwOHdEVDJYdXkxSzJueWo5NmRlMTBjcC8KVW5RZElYQU1WMGJ2TXNlWVpDVlpyVkMzQ3ppY0IyakEKLS0tLS1FTkQgQ0VSVElGSUNBVEUgUkVRVUVTVC0tLS0tCg== |base64 --decode
+   -----BEGIN CERTIFICATE REQUEST-----
+   MIICVDCCATwCAQAwDzENMAsGA1UEAwwEamFuZTCCASIwDQYJKoZIhvcNAQEBBQAD
+   ggEPADCCAQoCggEBAJybaAAaSUysnz6D0TGLs8p8Zmew9+2FH+A59pj1SSt5V8Mg
+   XjENC7/BYpSLzEueKsFqiew7MntuUKuJaK1tHwNaUGhOzLgqcdTTenZxi7kPmTdK
+   cbaxbz859d7v/T7I8BjE0EuL5VNkonwoqN69BNtMmJJOCzlvhFWDQLM/aNW1qER0
+   6zeLmbJv9la5g8jixLpLYBeuAvPm6RBkO4ncmENbboGma9/XBM/xVgviUAAqHUJX
+   AQOrhuaZSw0mKZByL/aOo85n0iBWWexB8GImFyIQOaamkUfAlnItT7k7l6odWglb
+   hUB7HuidMFL5edf7dWFUqzSBzQYIfedT20NovE8CAwEAAaAAMA0GCSqGSIb3DQEB
+   CwUAA4IBAQAdGIiJY8LQqtvST2VcZwQNCVb/Pblj9cGRhNSxAf3VYVLsmxe9k+S7
+   qXB20kEeSpN9VO0PG68bYqs+oeygemgaes5OUKZQFXU8W+OeUoN8H5F0pAmVSEcK
+   Ywzmd1oiMB85q8u99L6HTr1OQjgP1shT/MqzyAkN8CNn8CQACjiVs3Go0lvSX76V
+   59DjTphnhisRAb1KWN5ctUL46bo+HNf3vsXFSNdACcSuJm7Wjf4s2GDcjno9EarQ
+   VfAmnQxedRHif+bJ5YogkZq+FBq7Aa2P308GYlw7p8wDT2Xuy1K2nyj96de10cp/
+   UnQdIXAMV0bvMseYZCVZrVC3CzicB2jA
+   -----END CERTIFICATE REQUEST-----
+   ```
+
+All the certificate signing operations are performed under `Controller Manager` - which has `CSR-APPROVING` and `CSR-SIGNING` which perform these tasks.
+
+```bash
+> cat /etc/kubernetes/manifests/kube-controller-manager.yaml
+```
+
+`kube-controller-manager` manifest file has 2 fields with `spec` section :
+
+- `--cluster-signing-cert-file`
+- `--cluster-signing-key-file`
 
 ## kube-config
+
+A user can be make a call to `kube-apiserver` in the following ways:
+
+1. Using `cURL` command -
+
+   ```bash
+   > curl https://my-kube-playground:6443/api/v1/pods \
+   --key admin.key
+   --cert admin.crt
+   --cacert ca.crt
+   
+   {
+   	"kind" : "PodList",
+   	"apiVersion": "v1",
+   	"metadata": {
+   		"selfLink": "/api/v1/pods",
+   	},
+   	"items": []
+   }
+   ```
+
+2. Using `kubectl` command - 
+
+   ```bash
+   > kubectl get pods \
+   			--server my-kube-playground:6443
+   			--client-key admin.key
+   			--client-certificate admin.crt
+   			--certificate-authority ca.crt
+   No resources found.
+   ```
+
+3. Using `kube-config` file:
+
+   ```yaml
+   # $HOME/.kube/config
+   ```
+
+   The `kube-config` file has 3 sections:
+
+   | Sections | Description                                                  | Examples                                 | Remark relating to above command                             |
+   | -------- | ------------------------------------------------------------ | ---------------------------------------- | ------------------------------------------------------------ |
+   | Clusters | They are various Kubernetes clusters                         | Development, Production, Staging, etc.   | --server                                                     |
+   | Users    | They are various interacting users with multiple types of privileges | Admin, Dev user, Prod user, etc.         | --client-key admin.key,		<br />--client-certificate admin.crt,<br />--certificate-authority ca.crt |
+   | Contexts | They create a symbolic relationship                          | Admin@Production, Prod user@Google, etc. | Cluster@User                                                 |
+
+   ```yaml
+   # kube-config.yaml
+   apiVersion: v1
+   kind: Config
+   
+   clusters:
+   - name: my-kube-playground
+     cluster:
+       certificate-authority:
+       server: https://my-kube-playground:6443
+   
+   contexts:
+   - name: my-kube-admin@my-kube-playground
+     context:
+       cluster: my-kube-playground
+       user: my-kube-admin
+   
+   users:
+   - name: my-kube-admin
+     user:
+       client-certificate: admin.crt
+       client-key: admin.key
+   ```
+
+   By default, `kubectl` utility looks for `$HOME/.kube/config` path.
+
+   ```bash
+   > kubectl get pods
+   	--kubeconfig config
+   ```
+   
+   ```yaml
+   # kube-config.yaml
+   apiVersion: v1
+   kind: Config
+   
+   current-context: dev-user@google # specifies the current context
+   
+   clusters:
+   - name: my-kube-playground
+     # (values hidden)
+   - name: development
+     # (values hidden)
+   - name: production
+     # (values hidden)
+   - name: my-kube-playground
+     # (values hidden)
+     
+   contexts:
+   - name: my-kube-admin@my-kube-playground
+     # (values hidden)
+   - name: dev-user@google
+     # (values hidden)
+   - name: prod-user@production
+     # (values hidden)
+   
+   users:
+   - name: my-kube-admin
+     # (values hidden)
+   - name: admin
+     # (values hidden)
+   - name: dev-user
+     # (values hidden)  
+   - name: prod-user
+     # (values hidden)
+   ```
+   
+   > `current-context` specifies the current context in usage.
+   
+   To view the `kube-config`, we use:
+   
+   ```bash
+   > kubectl config view
+   apiVersion: v1
+   clusters:
+   - cluster:
+       certificate-authority-data: DATA+OMITTED
+       server: https://kubernetes.docker.internal:6443
+     name: docker-desktop
+   contexts:
+   - context:
+       cluster: docker-desktop
+       user: docker-desktop
+     name: docker-desktop
+   current-context: docker-desktop
+   kind: Config
+   preferences: {}
+   users:
+   - name: docker-desktop
+     user:
+       client-certificate-data: REDACTED
+       client-key-data: REDACTED
+   ```
+   
+   To view a custom kube-config file, we use the same command:
+   
+   ```bash
+   kubectl config view --kubeconfig=my-custom-config
+   ```
+   
+   To change `current-context`, we use:
+   
+   ```bash
+   kubectl config use-context prod-user@production
+   ```
+   
+   ### Using contexts in Namespaces
+   
+   ```yaml
+   # kube-config-04.yaml
+   apiVersion: v1
+   kind: Config
+   
+   clusters:
+   - name: production
+     cluster:
+       certificate-authority: /etc/kubernetes/pki/ca.crt
+       server: https://172.17.0.51:6443
+   
+   contexts:
+   - name: admin@production
+     context:
+       cluster: production
+       user: admin
+       namespace: finance
+   
+   users:
+   - name: admin
+     user:
+       client-certificate:  /etc/kubernetes/pki/users/admin.crt
+       client-key: /etc/kubernetes/pki/users/admin.key
+   ```
+   
+   ### Providing certificates' credentials in kube-configs
+   
+   ```yaml
+   # kube-config-04.yaml
+   apiVersion: v1
+   kind: Config
+   
+   clusters:
+   - name: production
+     cluster:
+       certificate-authority-data:
+       # paste the base64 encoded the certificate data here 
+       server: https://172.17.0.51:6443
+   
+   contexts:
+   - name: admin@production
+     context:
+       cluster: production
+       user: admin
+       namespace: finance
+   
+   users:
+   - name: admin
+     user:
+       client-certificate-data:  # paste the base64 encoded the certificate data here 
+       client-key-data:  # paste the base64 encoded the key data here 
+   ```
+   
+   
 
 ## Persistent Key/Value Store
 
 ## API Groups
+
+The kubernetes API server can be queried via `cURL` command.
+
+Example 1:
+
+```bash
+> curl https://kubernetes.docker.internal:6443/version
+```
+
+```json
+Client Version: version.Info{Major:"1", Minor:"21", GitVersion:"v1.21.2", GitCommit:"092fbfbf53427de67cac1e9fa54aaa09a28371d7", GitTreeState:"clean", BuildDate:"2021-06-16T12:59:11Z", GoVersion:"go1.16.5", Compiler:"gc", Platform:"windows/amd64"}
+Server Version: version.Info{Major:"1", Minor:"21", GitVersion:"v1.21.1", GitCommit:"5e58841cce77d4bc13713ad2b91fa0d961e69192", GitTreeState:"clean", BuildDate:"2021-05-12T14:12:29Z", GoVersion:"go1.16.4", Compiler:"gc", Platform:"linux/amd64"}
+```
+
+Example 2:
+
+```bash
+> curl --location --request GET 'https://kubernetes.docker.internal:6443/api/v1/pods' \
+--header 'Authorization: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6Im1GLTlBNGg1VEJBQVF1bWQ4cTRQX2hiUGpHUTlMdVo4U3VtTUVhb0FVSm8ifQ.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJkZWZhdWx0Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZWNyZXQubmFtZSI6ImRlZmF1bHQtdG9rZW4tbmQ1dmciLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC5uYW1lIjoiZGVmYXVsdCIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50LnVpZCI6IjkwNWQwZGQyLWYyNjgtNGYxNC05ZWM0LTEwY2JlYjE5Njc5OCIsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDpkZWZhdWx0OmRlZmF1bHQifQ.XXWWArytFl8S5511VrGhTLp7r5MEKoowjFYl1jcuC2nCG7HTfDwNycjuJK2Bf4A6c-iwhkS1HxGtnVnUqeg2Lho6lCkfRuHJflkN_KYhTBh2FeE95gjZ7hpBkCLeK5A91hDJ7tVtyJe2QyLI58g2JFMvRMENIIsbr3W66bDrMmnLW1uxKLO3lDoC3YXYMJO1n9HREhcltqi_d3ljwF5JOK7XPtT7aFMUTzHUcsURN5u1bbeYJTir-fg8LaQ8DPFFxsRv1BvFzRalMgho8Gz1InOO1CPJWs9gRot7BuKQKsdCxVLiIsKn4K2Pv8z85SFI2FKSGzFvD_lNV71ZnV9YTA'
+```
+
+```json
+
+```
+
+the sitting was bashes up ajhhsj bcuiucjaujdunnhhhckkaiiid w
 
 ## Authorization
 
