@@ -1419,7 +1419,27 @@ These APIs are categorized into 6 categories:
 5. `/apis` 👈
 6. `/logs`
 
-`/api` are the set of Core APIs
+`/api` are the set of Core APIs which has all the resources within itself.
+
+![](https://github.com/aditya109/learning-k8s/blob/main/assets/api%20distribution.png?raw=true)
+
+`/apis` are the set of Named-group APIs are more organized.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ## Authorization
 
