@@ -1425,6 +1425,14 @@ These APIs are categorized into 6 categories:
 
 `/apis` are the set of Named-group APIs are more organized.
 
+### kubectl proxy
+
+Apart from `curl` to hit `kube-apiserver`, you can also use `kubectl proxy` to hit apiserver.
+
+Run `kubectl proxy` to hit apiserver. It should setup a proxy on port 8080 or `http://127.0.0.1:8080`. This proxy can be hit without using any certificates to obtain the same response.
+
+#### kube-proxy v/s kubectl proxy
+
 
 
 
