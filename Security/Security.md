@@ -1410,11 +1410,16 @@ Example 2:
 --header 'Authorization: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6Im1GLTlBNGg1VEJBQVF1bWQ4cTRQX2hiUGpHUTlMdVo4U3VtTUVhb0FVSm8ifQ.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJkZWZhdWx0Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZWNyZXQubmFtZSI6ImRlZmF1bHQtdG9rZW4tbmQ1dmciLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC5uYW1lIjoiZGVmYXVsdCIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50LnVpZCI6IjkwNWQwZGQyLWYyNjgtNGYxNC05ZWM0LTEwY2JlYjE5Njc5OCIsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDpkZWZhdWx0OmRlZmF1bHQifQ.XXWWArytFl8S5511VrGhTLp7r5MEKoowjFYl1jcuC2nCG7HTfDwNycjuJK2Bf4A6c-iwhkS1HxGtnVnUqeg2Lho6lCkfRuHJflkN_KYhTBh2FeE95gjZ7hpBkCLeK5A91hDJ7tVtyJe2QyLI58g2JFMvRMENIIsbr3W66bDrMmnLW1uxKLO3lDoC3YXYMJO1n9HREhcltqi_d3ljwF5JOK7XPtT7aFMUTzHUcsURN5u1bbeYJTir-fg8LaQ8DPFFxsRv1BvFzRalMgho8Gz1InOO1CPJWs9gRot7BuKQKsdCxVLiIsKn4K2Pv8z85SFI2FKSGzFvD_lNV71ZnV9YTA'
 ```
 
-```json
+These APIs are categorized into 6 categories:
 
-```
+1. `/metrics`
+2. `/healthz`
+3. `/version`
+4. `/api`  👈
+5. `/apis` 👈
+6. `/logs`
 
-the sitting was bashes up ajhhsj bcuiucjaujdunnhhhckkaiiid w
+`/api` are the set of Core APIs
 
 ## Authorization
 

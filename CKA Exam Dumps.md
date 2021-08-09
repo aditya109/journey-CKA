@@ -2,25 +2,70 @@
 
 1. **List your `PersistentVolume` by `Name`, `Size`.**
 
+   ```powershell
+   # first let's create PersistentVolumes
+   # pv-volume.yaml
+   ---
+   apiVersion: v1
+   kind: PersistentVolume
+   metadata:
+     name: talex-pv-volume
+     labels:
+       type: local
+   spec:
+     storageClassName: manual
+     capacity:
+       storage: 52Mi
+     accessModes:
+       - ReadWriteOnce
+     hostPath:
+       path: "/mnt/data"
+   --- 
+   apiVersion: v1
+   kind: PersistentVolume
+   metadata:
+     name: ruby-pv-volume
+     labels:
+       type: local
+   spec:
+     storageClassName: manual
+     capacity:
+       storage: 78Mi
+     accessModes:
+       - ReadWriteOnce
+     hostPath:
+       path: "/mnt/data"
    
+   # creating pv 
+   ➜ kubectl create -f pv-volume.yaml 
+   persistentvolume/talex-pv-volume created
+   persistentvolume/ruby-pv-volume created
+   
+   # sorting pv by name
+   ➜ kubectl get pv --sort-by=.metadata.name
+   NAME              CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS      CLAIM   STORAGECLASS   REASON   AGE
+   ruby-pv-volume    78Mi       RWO            Retain           Available           manual                  2m11s
+   talex-pv-volume   52Mi       RWO            Retain           Available           manual                  2m11s
+   
+   # sorting pv by size
+   ➜ kubectl get pv --sort-by=.spec.capacity.storage
+   NAME              CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS      CLAIM   STORAGECLASS   REASON   AGE
+   talex-pv-volume   52Mi       RWO            Retain           Available           manual                  15s
+   ruby-pv-volume    78Mi       RWO            Retain           Available           manual                  15s
+   ```
 
-2. ajhnasuncujunyhhhjkinjuiihjkjkkkkigghjlasudksd
+**2. All ready nodes, one of them marked as no-schedule, list all the nodes excluding the label no-schedule.**
 
-**CKA Questions [Confidential]**
+```powershell
+➜ kubectl get node docker-desktop -o yaml > docker-desktop.yaml
+
+```
+
+
 
  
 
-**1. List your pv sort by name.[DONE]**
-
-  **List your pv sort by size.[DONE]**
-
- 
-
-**2. All ready nodes, one of them marked as no-schedule, list all the nodes excluding the label no-schedule.[DONE]**
-
- 
-
-**3. Kubectl command failing with error - “ The connection to the server localhost:8080 was refused - did you specify the right host or port?”. Fix it.**
+**3. kubectl command failing with error - “ The connection to the server localhost:8080 was refused - did you specify the right host or port?”. Fix it.**
 
  
 
