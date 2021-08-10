@@ -1486,7 +1486,11 @@ So on receiving a request from the user, the `kube-apiserver` makes a call to `O
 
 In order to configure the authorization modes, we have to specify it at the time of `kube-apiserver` server creation.
 
+![](https://github.com/aditya109/learning-k8s/blob/main/assets/authmode.png?raw=true)
 
+This can be changed here, multiple modes can be specifying in the same; authorization order is the same as mentioned in the file.
+
+![](https://github.com/aditya109/learning-k8s/blob/main/assets/authmode2.png?raw=true)
 
 ## Cluster Roles and Role Bindings
 
