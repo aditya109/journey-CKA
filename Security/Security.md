@@ -1433,25 +1433,60 @@ Run `kubectl proxy` to hit apiserver. It should setup a proxy on port 8080 or `h
 
 #### kube-proxy v/s kubectl proxy
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+<tbd/>
 
 ## Authorization
 
-## Role Based Access Controls
+Authorization mechanisms supported by Kubernetes:
+
+- Node
+- ABAC
+- RBAC
+- Webhook
+- AlwaysAllow (no authorization, allows all requests)
+- AlwaysDeny (no authorization, denies all requests)
+
+### Node-based Authorization
+
+In a normal Kubernetes setup, the user sends the requests to the `kube-apiserver` and so does the `kubelet`. All the authorization for these requests are handled by a special entity called `Node Authorizer`.
+
+All of the requests sent by the `kubelet` are done with the group name `system:node:node01` and are part of `system:node:node01` group.  All the request coming from `system:node:node01` group are authorized by the `Node Authorizer`.
+
+### Attribute Based Access Control (ABAC)
+
+In ABAC (for external access to `/api`), a user or a set of user can be associated to a set of permissions. 
+
+For this, we need to create a `Policy` definition file with the list of policies mentioned in JSON format, and pass it onto the `kube-apiserver`.
+
+```json
+{
+    "kind": "Policy",
+    "spec": {
+        "user": "dev-user",
+        "namespace": "*",
+        "resource": "pods",
+        "apiGroup": "*"
+    }
+}
+```
+
+The issue with using `Policy` definition files are that whenever the permissions are to be edited, the admin has to manually grant or revoke the same from the aforementioned policy definition files, which is pain in the a** (believe me I know 😫)
+
+### Webhook
+
+But what if the authorization is required to be outsourced, e.g.,  we don't want to use built-in ones. E.g.,
+
+- `Open Policy Agent`
+
+So on receiving a request from the user, the `kube-apiserver` makes a call to `Open Policy Agent`, which decides if the user should be permitted to make the request.
+
+### Role Based Access Controls
+
+### kube-apiserver and Authorization Modes
+
+In order to configure the authorization modes, we have to specify it at the time of `kube-apiserver` server creation.
+
+
 
 ## Cluster Roles and Role Bindings
 
