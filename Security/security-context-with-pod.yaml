@@ -1,0 +1,48 @@
+---
+# pod-level security context application
+apiVersion: v1
+kind: Pod
+metadata:
+  name: web-pod
+  labels:
+    name: web-pod
+spec:
+  securityContext:
+    runAsUser: 1000
+    capabilities:
+      add: ["MAC_ADMIN"]
+  containers:
+  - name: web-pod
+    image: ubuntu
+    command:
+      - "sleep"
+      - "3600"
+    resources:
+      limits:
+        memory: "128Mi"
+        cpu: "500m"
+  
+
+---
+# container-level security context application
+apiVersion: v1
+kind: Pod
+metadata:
+  name: web-pod
+  labels:
+    name: web-pod
+spec:
+  containers:
+  - name: web-pod
+    image: ubuntu
+    command:
+      - "sleep"
+      - "3600"
+    resources:
+      limits:
+        memory: "128Mi"
+        cpu: "500m"
+    securityContext:
+      runAsUser: 1000
+      capabilities:   # capabilities are supported only at container level
+        add: ["MAC_ADMIN"]

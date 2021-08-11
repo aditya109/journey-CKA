@@ -35,10 +35,18 @@
   * [Performing Certificate Health Check](#performing-certificate-health-check)
 - [Certificates API and Workflow](#certificates-api-and-workflow)
 - [kube-config](#kube-config)
+  * [Using contexts in Namespaces](#using-contexts-in-namespaces)
+  * [Providing certificates' credentials in kube-configs](#providing-certificates--credentials-in-kube-configs)
 - [Persistent Key/Value Store](#persistent-key-value-store)
 - [API Groups](#api-groups)
+  * [kubectl proxy](#kubectl-proxy)
+    + [kube-proxy v/s kubectl proxy](#kube-proxy-v-s-kubectl-proxy)
 - [Authorization](#authorization)
-- [Role Based Access Controls](#role-based-access-controls)
+  * [Node-based Authorization](#node-based-authorization)
+  * [Attribute Based Access Control-ABAC-](#attribute-based-access-control-abac)
+  * [Webhook](#webhook)
+  * [Role Based Access Control-RBAC](#role-based-access-control-rbac)
+  * [kube-apiserver and Authorization Modes](#kube-apiserver-and-authorization-modes)
 - [Cluster Roles and Role Bindings](#cluster-roles-and-role-bindings)
 - [Image Security](#image-security)
 - [Security Contexts](#security-contexts)
@@ -1452,7 +1460,7 @@ In a normal Kubernetes setup, the user sends the requests to the `kube-apiserver
 
 All of the requests sent by the `kubelet` are done with the group name `system:node:node01` and are part of `system:node:node01` group.  All the request coming from `system:node:node01` group are authorized by the `Node Authorizer`.
 
-### Attribute Based Access Control (ABAC)
+### Attribute Based Access Control-ABAC
 
 In ABAC (for external access to `/api`), a user or a set of user can be associated to a set of permissions. 
 
@@ -1480,7 +1488,116 @@ But what if the authorization is required to be outsourced, e.g.,  we don't want
 
 So on receiving a request from the user, the `kube-apiserver` makes a call to `Open Policy Agent`, which decides if the user should be permitted to make the request.
 
-### Role Based Access Controls
+### Role Based Access Control-RBAC
+
+In RBAC, we first create a `Role` and then we associate permissions to the `Role` and lastly we associate users to that role.
+
+First, we make `Role` definition file.
+
+```yaml
+# dev-role.yaml
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: developer
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["list", "get", "create", "update", "delete"]
+  - apiGroups: [""]
+    resources: ["ConfigMap"]
+    verbs: ["create"]
+```
+
+Then, we make `RoleBinding` definition file.
+
+```yaml
+# devuser-dev-binding.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: devuser-dev-binding
+subjects:
+  - kind: User
+    name: dev-user
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  - kind: Role
+    name: developer
+    apiGroup: rbac.authorization.k8s.io
+```
+
+To list roles and role-bindings, we use:
+
+```powershell
+> kubectl get roles 
+> kubectl get rolebindings
+```
+
+To view in detail,
+
+```powershell
+$ kubectl describe role developer
+Name:         developer
+Labels:       <none>
+Annotations:  <none>
+PolicyRule:
+  Resources  Non-Resource URLs  Resource Names  Verbs
+  ---------  -----------------  --------------  -----
+  ConfigMap  []                 []              [create]
+  pods       []                 []              [list get create update delete]
+  
+$ kubectl describe rolebinding devuser-dev-binding
+Name:         devuser-dev-binding
+Labels:       <none>
+Annotations:  <none>
+Role:
+  Kind:  Role
+  Name:  developer
+Subjects:
+  Kind  Name      Namespace
+  ----  ----      ---------
+  User  dev-user
+```
+
+#### Check Access
+
+Check if you have access to certain kubectl commands.
+
+```powershell
+$ kubectl auth can-i create deployments
+yes
+```
+
+Check if another user has access to certain kubectl commands. (by admin)
+
+```powershell
+$ kubectl auth can-i create deployments \
+	--as developer \
+	--namespace default 
+no
+```
+
+#### Restrictive Access
+
+We can provide `resourceNames` field in the role manifest to restrict the user to using some some of the pods. 
+
+```yaml
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: developer
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["list", "get", "create", "update", "delete"]
+    resourceNames: ["blue", "orange"]		
+  - apiGroups: [""]
+    resources: ["ConfigMap"]
+    verbs: ["create"]
+```
 
 ### kube-apiserver and Authorization Modes
 
@@ -1492,11 +1609,200 @@ This can be changed here, multiple modes can be specifying in the same; authoriz
 
 ![](https://github.com/aditya109/learning-k8s/blob/main/assets/authmode2.png?raw=true)
 
-## Cluster Roles and Role Bindings
+Here, as you can see the request is first authorized by Node Authorizer. If the module denies the request, the request is sent to the next link in the list, which in here is RBAC, then Webhook.
+
+## Cluster Roles and Cluster Role Bindings
+
+`RoleBinding` and `Role` are ***namespaced***, and can not be associated with ***cluster-scoped*** resources like:
+
+- nodes
+- PV
+- clusterroles
+- clusterrolebindings
+- certificatesigningrequests
+- namespaces
+
+```powershell
+# To get a list of namespaced resources
+kubectl api-resources --namespaced=true
+# To get a list of cluster-scoped resources
+kubectl api-resources --namespaced=false
+```
+
+To provide/revoke access to cluster-scoped resources, we create clusterroles.
+
+```yaml
+# cluster-admin-role.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cluster-administrator
+rules:
+- apiGroups: [""]
+  resources:
+    - nodes
+  verbs: 
+  - list
+  - get
+  - create
+  - delete
+```
+
+```bash
+$ kubectl create -f .\cluster-admin-role.yaml
+clusterrole.rbac.authorization.k8s.io/cluster-administrator created
+```
+
+To associate user to clusterrole, we create clusterrolebindings.
+
+```yaml
+# cluster-admin-role-binding.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cluster-admin-role-binding
+subjects:
+- kind: User
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-administrator
+```
 
 ## Image Security
 
+`image: nginx`
+
+The image can be extended as `docker.io/nginx/nginx`.
+
+`docker.io` - Image Registry
+
+`nginx` - Username
+
+`nginx` - Image name
+
+### Implementing Private Repository
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-pod
+  labels:
+    name: nginx-pod
+spec:
+  containers:
+  - name: nginx-pod
+    image: private-registry.io/apps/internal-app
+    resources:
+      limits:
+        memory: "128Mi"
+        cpu: "500m"
+    ports:
+      - containerPort: 8797
+```
+
+But what about credentials required for accessing the private registry ?
+
+We need to create a secret for accessing private image registry.
+
+```powershell
+kubectl create secret docker-registry regcred \
+	--docker-server=private-registry.io	\
+	--docker-username=registry-user \
+	--docker-password=registry-password \
+	--docker-email=registry-user@org.com
+```
+
+> `docker-registry` is a built-in secret type for storing docker credentials.
+
+We then specify it under `imagePullSecrets` in definition manifest.
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-pod
+  labels:
+    name: nginx-pod
+spec:
+  containers:
+  - name: nginx-pod
+    image: private-registry.io/apps/internal-app
+    resources:
+      limits:
+        memory: "128Mi"
+        cpu: "500m"
+    ports:
+      - containerPort: 8797
+  imagePullSecrets:
+    - name: regcred
+```
+
 ## Security Contexts
+
+Security contexts can be applied on pod-level and container-level.
+
+### Pod-level
+
+```yaml
+# pod-level security context application
+apiVersion: v1
+kind: Pod
+metadata:
+  name: web-pod
+  labels:
+    name: web-pod
+spec:
+  securityContext:
+    runAsUser: 1000
+    
+  containers:
+  - name: web-pod
+    image: ubuntu
+    command:
+      - "sleep"
+      - "3600"
+    resources:
+      limits:
+        memory: "128Mi"
+        cpu: "500m"
+```
+
+### Container-level
+
+```yaml
+# container-level security context application
+apiVersion: v1
+kind: Pod
+metadata:
+  name: web-pod
+  labels:
+    name: web-pod
+spec:
+  containers:
+  - name: web-pod
+    image: ubuntu
+    command:
+      - "sleep"
+      - "3600"
+    resources:
+      limits:
+        memory: "128Mi"
+        cpu: "500m"
+    securityContext:
+      runAsUser: 1000
+      capabilities: # capabilities are supported only at container level
+        add: ["MAC_ADMIN"]
+
+```
+
+> What is the user used to execute the sleep process within the `ubuntu-sleeper` pod?
+>
+> ```bash
+> kubectl exec ubuntu-sleeper --- whoami
 
 ## Network Policy
 
