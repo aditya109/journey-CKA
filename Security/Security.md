@@ -1806,7 +1806,47 @@ spec:
 
 ## Network Policy
 
+### Traffic
+
+***Ingress Traffic*** - Traffic coming into the entity
+
+***Egress Traffic*** - Traffic coming out of the entity
+
+If it is required to control traffic flow at the IP address or port level (OSI layer 3 or 4), then using Kubernetes `NetworkPolicies` for particular applications in your cluster might be considered.
+
+The entities that a Pod can communicate with are identified through a combination of the following 3 identifiers:
+
+1. Other pods that are allowed (exception: a pod cannot block access to itself)
+2. Namespaces that are allowed
+3. IP blocks (exception: traffic to and from the node where a Pod is running is always allowed, regardless of the IP address of the Pod or the node)
+
+```yaml
+kind: Networking
+metadata:
+  name: db-policy
+spec:
+  podSelector:
+    matchLabels:
+      role: db
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          role: api-pod
+    ports:
+    - protocol: TCP
+      port: 3306
+```
+
+`NetworkPolicies` are Kubernetes solution specific.
+
 ## Developing network policies
+
+
+
+
 
 [Back to Contents ⬆](#Contents)
 
