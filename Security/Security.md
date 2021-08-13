@@ -1844,7 +1844,9 @@ spec:
 
 ## Developing network policies
 
+![](https://github.com/aditya109/learning-k8s/blob/main/assets/network-policy.png?raw=true)
 
+Let's take first chunk DB pod to API pod.
 
 
 
