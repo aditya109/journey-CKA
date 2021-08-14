@@ -8,19 +8,21 @@ spec:
       role: db   # this associates this network policy to the db pod, blocking all the outside network
   policyTypes:
   - Ingress
+  - Egress
   ingress:
     - from:
     # rule 1
       - podSelector:      # this allows only pods with `api-pod` label to request data
           matchLabels:
             name: api-pod
-        namespaceSelector:   # this allows only pods in namespace `prod` to request data
-          matchLabels:
-            name: prod
-    # rule 2
+        ports:
+          - protocol: TCP
+            port: 3306
+  egress:
+    - to:
       - ipBlock:
-          cidr: 192.169.5.10/32 # this allows backup servers to request data
+          cidr: 192.168.5.10/32
       ports:
-        - protocol: TCP
-          portd: 3306
+      - protocol: TCP
+        port: 80
 

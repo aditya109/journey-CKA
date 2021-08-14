@@ -1846,7 +1846,139 @@ spec:
 
 ![](https://github.com/aditya109/learning-k8s/blob/main/assets/network-policy.png?raw=true)
 
-Let's take first chunk DB pod to API pod.
+Let's take first chunk: DB pod to API pod.
+
+![](https://github.com/aditya109/learning-k8s/blob/main/assets/network-policy-db-to-api-pod.png?raw=true)
+
+For this connection setup, we have a DB pod connecting to API pod.
+
+- We would need an ingress rule for setup the connection for the above.
+
+  > Would we need an ingress and an egress rule for incoming as well as outcoming traffic?
+  >
+  > Actually the ingress rule handles the 2-way connection.
+  >
+  > So egress rule would be required if the other entity (DB pod) needs to request call from the previous entity (API pod).
+
+  ```yaml
+  apiVersion: networking.k8s.io/v1
+  kind: NetworkPolicy
+  metadata:
+    name: db-policy
+  spec:
+    podSelector:
+      matchLabels:
+        role: db   # this associates this network policy to the db pod, blocking all the outside network
+    policyTypes:
+    - Ingress
+    ingress:
+      - from:
+      # rule 1
+        - podSelector:      # this allows only pods with `api-pod` label to request data
+            matchLabels:
+              name: api-pod
+          namespaceSelector:   # this allows only pods in namespace `prod` to request data
+            matchLabels:
+              name: prod
+      # rule 2
+        - ipBlock:
+            cidr: 192.169.5.10/32 # this allows backup servers to request data
+        ports:
+          - protocol: TCP
+            portd: 3306
+  ```
+
+The rules are in OR conjunction, meaning,
+
+traffic satisfying this rule
+
+```yaml
+- podSelector:      # this allows only pods with `api-pod` label to request data
+	matchLabels:
+		name: api-pod
+  namespaceSelector:   # this allows only pods in namespace `prod` to request data
+    matchLabels:
+		name: prod
+```
+
+OR this rule is allow.
+
+```yaml
+- ipBlock:
+	cidr: 192.169.5.10/32 # this allows backup servers to request data
+```
+
+The sub-rules are in AND conjunction, meaning,
+
+traffic allowed on
+
+```yaml
+podSelector:      # this allows only pods with `api-pod` label to request data
+	matchLabels:
+		name: api-pod
+```
+
+AND
+
+```yaml
+namespaceSelector:   # this allows only pods in namespace `prod` to request data
+    matchLabels:
+		name: prod
+```
+
+is allowed.
+
+The rules with `-` are in OR and sub -rules without `-` are in AND conjugation. 
+
+So, what if we need to push backup to Backup server from DB pod ?
+
+We would need an egress rule.
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: db-policy
+spec:
+  podSelector:
+    matchLabels:
+      role: db   # this associates this network policy to the db pod, blocking all the outside network
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+    - from:
+    # rule 1
+      - podSelector:      # this allows only pods with `api-pod` label to request data
+          matchLabels:
+            name: api-pod
+      ports:
+        - protocol: TCP
+          portd: 3306
+  egress:
+    - to:
+      - ipBlock:
+          cidr: 192.168.5.10/32
+      ports:
+      - protocol: TCP
+        port: 9898
+    - to:
+      - ipBlock:
+          cidr: 192.168.5.10/32
+      ports:
+      - protocol: TCP
+        port: 9898
+```
+
+
+
+
+
+
+
+
+
+
 
 
 
