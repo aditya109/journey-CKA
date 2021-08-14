@@ -31,6 +31,25 @@ But what if we want to modify our source code ?
 
 We can, but before we save the source code, the container creates its own version of source code, and uses that code for execution. This is Copy-On-Write mechanism.
 
+![](https://github.com/aditya109/learning-k8s/blob/main/assets/copy-on-storage.png?raw=true)
+
+So if we delete the container, the container layer goes along with it. In order to persist our source code, we use volumes.
+
+```powershell
+$ docker volume create data_volume
+├───aufs
+├───containers
+├───image
+└───var
+    ├───lib
+    │   └───docker
+    └───volumes
+        └───data_volume
+# now this volume can be mounted
+$ docker run -v data_volume:/var/lib/mysql mysql
+
+```
+
 
 
 ## Volume Driver Plugins in Docker
