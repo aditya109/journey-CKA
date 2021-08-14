@@ -1976,17 +1976,5 @@ spec:
         port: 9898
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
 [Back to Contents ⬆](#Contents)
 
