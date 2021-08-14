@@ -10,7 +10,7 @@ CoreDNS
 
 Network Namespaces
 
-Docker Networking 
+Docker Networking
 
 CNI
 
