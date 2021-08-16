@@ -50,9 +50,63 @@ $ docker run -v data_volume:/var/lib/mysql mysql
 
 ```
 
+![](https://github.com/aditya109/learning-k8s/blob/main/assets/volume-mounting.png?raw=true)
 
+This is volume mounting.
+
+#### Volume Mounting
+
+What if we want to mount another container to the same location. This is an example of volume mounting.
+
+```powershell
+$ docker run -v data_volume:/var/lib/mysql mysql
+```
+
+#### Bind Mounting
+
+But if we want our container to use an existing location on our live system. This is bind mounting.
+
+```powershell
+$ docker run -v /data/mysql:/var/lib/mysql mysql
+```
+
+> The -v option is outdated. Now we use `--mount` for mounting/binding volumes.
+>
+> ```powershell
+> $ docker run \
+> 	--mount type=bind, \
+> 	  		source=/data/mysql, \
+> 	  		target=/var/lib.mysql \
+> 	 mysql
+> ```
+>
+> 
+
+#### Storage drivers
+
+They help manage storage on images and containers.
+
+- AUFS
+- ZFS
+- BTRFS
+- Device Mapper
+- Overlay
+- Overlay2
 
 ## Volume Driver Plugins in Docker
+
+The volumes are handled by volume driver plugins, not storage drivers, ***Local*** being the default.
+
+- Azure File Storage
+- Convoy
+- DigitalOcean Block Storage
+- Flocker
+- gce-docker
+- GlusterFS
+- NetApp
+- RexTay
+- Portworx
+- VMware cSphere Storage
 
 ## Container Storage Interface (CSI)
 
@@ -69,3 +123,4 @@ $ docker run -v data_volume:/var/lib/mysql mysql
 ## Storage Class
 
 [Back to Contents ⬆](#Contents)
+
