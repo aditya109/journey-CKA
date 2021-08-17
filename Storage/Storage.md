@@ -80,7 +80,6 @@ $ docker run -v /data/mysql:/var/lib/mysql mysql
 > 	 mysql
 > ```
 >
-> 
 
 #### Storage drivers
 
@@ -353,13 +352,120 @@ spec:
     - name: mypd
       persistentVolumeClaim:
         claimName: myclaim
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: webapp
+spec:
+  containers:
+  - name: event-simulator
+    image: kodekloud/event-simulator
+    env:
+    - name: LOG_HANDLERS
+      value: file
+    volumeMounts:
+    - mountPath: /log
+      name: log-volume
+    resources:
+        limits:
+          memory: "128Mi"
+          cpu: "500m"  
+  volumes:
+  - name: log-volume
+    hostPath:
+      # directory location on host
+      path: /var/log/webapp
+      # this field is optional
+      type: Directory
 ```
 
 The same is true for ReplicaSets or Deployments. Add this to the pod template section of a Deployment on ReplicaSet.
 
-## Application Configuration
-
 ## Storage Class
+
+Before creating a `pv`, one has to manually provision the disk on cloud or on some storage solution.
+
+For example, for the following `pv-definition.yaml`:
+
+```yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-vol1
+spec:
+  capacity:
+    storage: 500Mi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  gcePersistentDisk:
+    pdName: pd-disk
+    fsType: ext4
+```
+
+We have to write manual provisioning commands, like,
+
+```bash
+$ gcloud beta compute disks create \
+		--size 1GB
+		--region us-east1
+		pd-disk
+```
+
+Instead, we can use `StorageClasses` for dynamic provisioning, which can automatically provision storage disk for us on the system.
+
+```yaml
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: google-storage
+provisioner: kubernetes.io/gce-pd
+parameters:
+  type: pd-standard
+  replication-type: none
+```
+
+Now, we can link this to the PVC.
+
+```yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: myclaim
+spec:
+  resources:
+    requests:
+      storage: 500Mi
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: google-storage
+```
+
+For linking to the pod, there is no change.
+
+```yaml
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mypod
+spec:
+  containers:
+    - name: myfrontend
+      image: nginx
+      volumeMounts:
+        - mountPath: "/var/www/html"
+          name: mypd
+      resources:
+        limits:
+          memory: "128Mi"
+          cpu: "500m"
+  volumes:
+    - name: mypd
+      persistentVolumeClaim:
+        claimName: myclaim
+```
 
 [Back to Contents ⬆](#Contents)
 
