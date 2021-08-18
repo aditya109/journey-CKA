@@ -1,36 +1,38 @@
 # Networking
 
-Contents
+## Contents
 
-Switching Routing
+## Switching and Routing
 
-DNS
+Let's assume that we have 2 systems A and B.
 
-CoreDNS
+## DNS
 
-Network Namespaces
+## CoreDNS
 
-Docker Networking
+## Network Namespaces
 
-CNI
+## Docker Networking
 
-Cluster Networking
+## CNI
 
-Pod Networking
+## Cluster Networking
 
-CNI in Kubernetes
+## Pod Networking
 
-CNI Weave
+## CNI in Kubernetes
 
-IP Address Management - Weave
+## CNI Weave
 
-Service Networking
+## IP Address Management - Weave
 
-DNS in Kubernetes
+## Service Networking
 
-Core DNS in Kubernetes
+## DNS in Kubernetes
 
-Ingress
+## Core DNS in Kubernetes
 
-Ingress - Annotations and rewrite-target
+## Ingress
+
+## Ingress - Annotations and rewrite-target
 

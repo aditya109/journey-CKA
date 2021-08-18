@@ -2,6 +2,24 @@
 
 ## Contents
 
+- [Storage in Docker](#storage-in-docker)
+  * [Layered Architecture](#layered-architecture)
+    + [Volume Mounting](#volume-mounting)
+    + [Bind Mounting](#bind-mounting)
+    + [Storage drivers](#storage-drivers)
+- [Volume Driver Plugins in Docker](#volume-driver-plugins-in-docker)
+- [Container Storage Interface (CSI)](#container-storage-interface--csi-)
+  * [Container Runtime Interface (CRI)](#container-runtime-interface--cri-)
+  * [Container Networking Interface (CNI)](#container-networking-interface--cni-)
+  * [Container Storage Interface (CSI)](#container-storage-interface--csi--1)
+- [Volumes](#volumes)
+- [Persistent Volumes](#persistent-volumes)
+- [Persistent Volume Claims](#persistent-volume-claims)
+- [Using PVCs in PODs](#using-pvcs-in-pods)
+- [Storage Class](#storage-class)
+
+<small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
+
 ## Storage in Docker
 
 There are 2 types of storage used in Docker:
