@@ -6,10 +6,22 @@
 
 Let's assume that we have 2 systems A and B. How will they communicate to each other ??
 
-![](https://raw.githubusercontent.com/aditya109/learning-k8s/63fd9c8ed4ae59dadcd3e3c7006810fde5ef9b66/assets/networking-1.svg)
+![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/assets/networking-1.svg)
 
 We connect them to a switch.
-![](https://raw.githubusercontent.com/aditya109/learning-k8s/63fd9c8ed4ae59dadcd3e3c7006810fde5ef9b66/assets/networking-1.svg)
+![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/assets/networking-2.svg)
+
+To connect each system to the switch, we need to create some sort of an interface. For which, we use the following commands on both the systems.
+
+```bash
+$ ip link # to view 
+```
+
+
+
+
+
+
 
 
 
