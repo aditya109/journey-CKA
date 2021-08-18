@@ -4,7 +4,16 @@
 
 ## Switching and Routing
 
-Let's assume that we have 2 systems A and B.
+Let's assume that we have 2 systems A and B. How will they communicate to each other ??
+
+![](https://raw.githubusercontent.com/aditya109/learning-k8s/63fd9c8ed4ae59dadcd3e3c7006810fde5ef9b66/assets/networking-1.svg)
+
+We connect them to a switch.
+![](https://raw.githubusercontent.com/aditya109/learning-k8s/63fd9c8ed4ae59dadcd3e3c7006810fde5ef9b66/assets/networking-1.svg)
+
+
+
+
 
 ## DNS
 
