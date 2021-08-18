@@ -14,8 +14,12 @@ We connect them to a switch.
 To connect each system to the switch, we need to create some sort of an interface. For which, we use the following commands on both the systems.
 
 ```bash
-$ ip link # to view 
+$ ip link # to view the switch interface name
+$ ip addr add 192.168.1.10/24 dev eth0 # assign the system A to networking interface
+$ ip addr add 192.168.1.11/24 dev eth0 # assign the system B to networking interface
 ```
+
+> The switch as of now, only enables communication between the nodes A and B, no external traffic in/out is allowed.
 
 
 
