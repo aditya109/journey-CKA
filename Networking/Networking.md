@@ -13,6 +13,8 @@ We connect them to a switch.
 
 To connect each system to the switch, we need to create some sort of an interface. For which, we use the following commands on both the systems.
 
+![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/assets/networking-3.svg)
+
 ```bash
 $ ip link # to view the switch interface name
 $ ip addr add 192.168.1.10/24 dev eth0 # assign the system A to networking interface
@@ -21,7 +23,11 @@ $ ip addr add 192.168.1.11/24 dev eth0 # assign the system B to networking inter
 
 > The switch as of now, only enables communication between the nodes A and B, no external traffic in/out is allowed.
 
+How to connect host B to C both being on different networks ?
 
+![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/assets/networking-4.svg)
+
+For this we need a router.
 
 
 
