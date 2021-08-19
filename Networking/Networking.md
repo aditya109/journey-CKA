@@ -55,9 +55,17 @@ To connect the host to the internet `172.217.194.0/24`, we need to connect route
 $ ip route add 172.217.194.0/24 via 192.168.2.1
 ```
 
+There are so many sites for routing available on the internet. Instead of adding multiple routing table entries on same name, we can use :
 
+```bash
+$ ip route add default via 192.168.2.1
+# or
+$ ip route add 0.0.0.0 via 192.168.2.1
+```
 
+Now, any request outside your current network, goes through the router.
 
+But this is OK, when you just have one router in your network, when you have multiple routers, you have to have multiple routing configurations.
 
 
 
