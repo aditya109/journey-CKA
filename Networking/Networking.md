@@ -8,7 +8,7 @@ Let's assume that we have 2 systems A and B. How will they communicate to each o
 
 ![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/assets/networking-1.svg)
 
-We connect them to a switch.
+We connect them to a **switch**.
 ![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/assets/networking-2.svg)
 
 To connect each system to the switch, we need to create some sort of an interface. For which, we use the following commands on both the systems.
@@ -27,9 +27,33 @@ How to connect host B to C both being on different networks ?
 
 ![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/assets/networking-4.svg)
 
-For this we need a router.
+For this we need a **router**. The router get assigned 2 IPs one on each switch port. This will enable communication between two switches.
 
+![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/assets/networking-5.svg)
 
+But how will B send data to C ?
+
+For that we will also need a **gateway**. It is a method of communicating to the outside networks.
+
+To see the existing routing table configurations, we use:
+
+```bash
+$ route
+```
+
+To add the another host C on B, we use:
+
+```bash
+$ ip route add 192.168.2.0/24 via 192.168.1.1
+```
+
+> This has to be done for all the target hosts.
+
+To connect the host to the internet `172.217.194.0/24`, we need to connect router to the internet. Then add a new routing configuration to the host, 
+
+```bash
+$ ip route add 172.217.194.0/24 via 192.168.2.1
+```
 
 
 
