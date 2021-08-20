@@ -16,9 +16,11 @@ To connect each system to the switch, we need to create some sort of an interfac
 ![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/assets/networking-3.svg)
 
 ```bash
-$ ip link # to view the switch interface name
-$ ip addr add 192.168.1.10/24 dev eth0 # assign the system A to networking interface
-$ ip addr add 192.168.1.11/24 dev eth0 # assign the system B to networking interface
+ip link # to view the switch interface name
+
+ip addr add 192.168.1.10/24 dev eth0 # assign the system A to networking interface
+
+ip addr add 192.168.1.11/24 dev eth0 # assign the system B to networking interface
 ```
 
 > The switch as of now, only enables communication between the nodes A and B, no external traffic in/out is allowed.
@@ -38,13 +40,13 @@ For that we will also need a **gateway**. It is a method of communicating to the
 To see the existing routing table configurations, we use:
 
 ```bash
-$ route
+route
 ```
 
 To add the another host C on B, we use:
 
 ```bash
-$ ip route add 192.168.2.0/24 via 192.168.1.1
+ip route add 192.168.2.0/24 via 192.168.1.1
 ```
 
 > This has to be done for all the target hosts.
@@ -52,7 +54,7 @@ $ ip route add 192.168.2.0/24 via 192.168.1.1
 To connect the host to the internet `172.217.194.0/24`, we need to connect router to the internet. Then add a new routing configuration to the host, 
 
 ```bash
-$ ip route add 172.217.194.0/24 via 192.168.2.1
+ip route add 172.217.194.0/24 via 192.168.2.1
 ```
 
 
