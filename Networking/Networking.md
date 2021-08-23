@@ -92,27 +92,26 @@ and in C, we need to have routing configurations in routing table,
 ip route add 192.168.1.0/24 via 192.168.2.6
 ```
 
+Now, we can ping IP<sub>C</sub> from A, but don't get any response from C, reason being by-default the Linux does not allow data packet forwarding. To enable that, in host C, overwrite value in `/proc/sys/net/ipv4/ip_forward`  file to 1 from 0.
 
+```bash
+echo 1 > /proc/sys/net/ipv4/ip_forward
+1
+cat /proc/sys/net/ipv4/ip_forward
+1
+```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+> This change won't persist in across reboots, so it requires modification in `/etc/sysctl.conf` file.
+>
+> ```bash
+> ...
+> net.ipv4.ip_forward = 1
+> ...
+> ```
 
 ## DNS
+
+
 
 ## CoreDNS
 
