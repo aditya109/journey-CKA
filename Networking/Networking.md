@@ -69,6 +69,47 @@ Now, any request outside your current network, goes through the router.
 
 But this is OK, when you just have one router in your network, when you have multiple routers, you have to have multiple routing configurations.
 
+**Next scenario**: How do you want to connect A to C ?
+
+![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/assets/networking-scenario-2.svg)
+
+From A, if you ping IP<sub>C</sub>;
+
+```bash
+ping 192.168.2.5
+# connect: network is unreachable
+```
+
+So in A, we need to have routing configurations in routing table,
+
+```bash
+ip route add 192.168.2.0/24 via 192.168.1.6
+```
+
+and in C, we need to have routing configurations in routing table,
+
+```bash
+ip route add 192.168.1.0/24 via 192.168.2.6
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ## DNS
