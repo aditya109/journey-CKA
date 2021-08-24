@@ -263,7 +263,13 @@ dig www.google.com
 
 ### Configuring a dedicated system as DNS (CoreDNS)
 
-1.  Download the binary using curl or wget. And extract it. You get the coreDNS executable.
+1. Download the binary using curl or wget. And extract it. You get the coreDNS executable.
+
+   ```bash
+   wget https://github.com/coredns/coredns/releases/download/v1.8.4/coredns_1.8.4_linux_arm64.tgz
+   ```
+
+   
 
 ## Network Namespaces
 
