@@ -111,9 +111,159 @@ cat /proc/sys/net/ipv4/ip_forward
 
 ## DNS
 
+![](https://raw.githubusercontent.com/aditya109/learning-k8s/a5821e04abcc0d86569ad9b827b130a1df3dc7aa/assets/networking-dns.svg)
 
+Consider this setup. What we want to do is instead of its IP, we want to ping host B from A using its given name `db`. For that,
+
+```bash
+cat >> /etc/hosts
+192.168.1.11	db
+```
+
+Now, `/etc/hosts` is the source of truth for host A. Whatever it sees in the `/etc/hosts` file it thinks it is truth and starts sending requests accordingly. 
+
+The problem here is the entries in `/etc/hosts` file might not always be true. For example, in host B, running `hostname` command reveals that the actual name of host B is `host-2`.
+
+But, as host A is unaware of this fact, whatever comes requests for formed for `db` host, it re-routes all the requests to host B.
+
+This is called Name Resolution.
+
+This process is not scalable though. For example, let's we have a 100 servers, and at least 3 of servers got their IPs updated.
+
+Starting off, we will need to manually update `/etc/hosts` file for all 100 of the servers, and post that if some host IPs got updated, we have to manually do it for all the servers. We this all of these entries are now moved to a special server called DNS server.
+
+To add a DNS server to any host, all you need to do is add an entry to the `/etc/resolv.conf` file.
+
+```bash
+cat /etc/resolv.conf
+nameserver 		192.168.1.100
+
+ping db
+```
+
+Now, all IP-hostname entries get updated in the one single place only, along with any host-IP changes done. Hence, the need for `/etc/hosts` is removed, which can still be used for private purposes.
+
+But, what if there are 2 similar entries in the DNS server and `/etc/hosts/` file.
+
+```bash
+# DNS server entries
+139.183.121.188			web
+49.236.74.206			db
+189.197.163.121			nfs
+6.184.138.211			db-1
+4.10.176.191			nfs-3
+237.149.65.17			db-7
+172.159.243.60			web-19
+56.119.78.108			test			👈
+72.149.228.30			nfs-prod
+27.48.22.70				sql
+```
+
+```bash
+# /etc/hosts
+192.168.1.115			test			👈
+```
+
+Here, first `/etc/hosts` are looked at and then at DNS entries.
+
+Now, what if I want to ping `netflix.com` from the host A ?
+
+A new entry for Google DNS can be added to the local DNS server.
+
+```bash
+# DNS server entries
+139.183.121.188			web
+49.236.74.206			db
+189.197.163.121			nfs
+6.184.138.211			db-1
+4.10.176.191			nfs-3
+237.149.65.17			db-7
+172.159.243.60			web-19
+56.119.78.108			test			👈
+72.149.228.30			nfs-prod
+27.48.22.70				sql
+
+Forward All to 8.8.8.8
+```
+
+
+
+Let's say there is an org DNS connected to host-A which has the following records:
+
+```bash
+# DNS server(192.168.1.100) entries
+192.168.1.10 		web.mycompany.com
+192.168.1.11 		db.mycompany.com
+192.168.1.12 		nfs.mycompany.com
+192.168.1.13 		web-1.mycompany.com
+192.168.1.14 		sql.mycompany.com
+192.168.1.15 		hr.mycompany.com
+```
+
+Now, whenever I hit `web`, it should re-route the traffic to `web.mycompany.com`. 
+
+For that, we need to add an entry to `/etc/resolv.conf`.
+
+```bash
+cat /etc/resolv.conf
+nameserver			192.168.1.100
+search				mycompany.com
+```
+
+The search entry here appends `mycompany.com` to all the search entries and then searches it in the DNS.
+
+Additional, entries in `search` field would mean either of the accumulated entries can be searched in the DNS. For example,
+
+```bash
+cat /etc/resolv.conf
+nameserver			192.168.1.100
+search				mycompany.com prod.mycompany.com
+```
+
+The searchable entries would be:
+
+1. web.mycompany.com
+2. web.prod.mycompany.com
+
+### Record Types
+
+| A     | web-server      | 192.168.1.1                       |
+| ----- | --------------- | --------------------------------- |
+| AAAA  | web-server      | fe80::e496:dacf:ecc7:62e2%9       |
+| CNAME | food.web-server | eat.web-server, hungry.web-server |
+
+### nslookup
+
+The above command can be used to ping another hosts for an individual host.
+
+> The individual host entries in `/etc/hosts` file are not considered for name resolution here, only DNS is considered.
+
+```bash
+nslookup www.google.com
+Server:  dsldevice.lan
+Address:  192.168.1.1
+
+Non-authoritative answer:
+Name:    www.google.com
+Addresses:  2404:6800:4002:821::2004
+          142.250.194.100
+```
+
+### dig
+
+The above command can also be used to ping another hosts for an individual host with a lot more info.
+
+> The individual host entries in `/etc/hosts` file are not considered for name resolution here, only DNS is considered.
+
+```bash
+dig www.google.com
+```
 
 ## CoreDNS
+
+### Configuring a dedicated system as DNS (CoreDNS)
+
+1.  Download the binary using curl or wget. And extract it. You get the coreDNS executable.
 
 ## Network Namespaces
 
