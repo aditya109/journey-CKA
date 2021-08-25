@@ -269,9 +269,51 @@ dig www.google.com
    wget https://github.com/coredns/coredns/releases/download/v1.8.4/coredns_1.8.4_linux_arm64.tgz
    ```
 
+   ```bash
+   tar -xzvf coredns_1.8.4_linux_arm64.tgz
+   ```
    
+   ```bash
+   ./coredns
+   ```
+   
+2. Run the executable to start a DNS server. (default port 53)
+
+3. We haven't specified any IP-hostname mappings for which you need to provide some configurations.
+
+   1. For that, put all of the entries into the DNS servers `/etc/hosts/` file.
+
+4. And then we configure CoreDNS to use that file. CoreDNS loads it’s configuration from a file named `Corefile`. 
+   Here is a simple configuration that instructs CoreDNS to fetch the IP to hostname mappings from the file `/etc/hosts`. When DNS server is run, it now picks the IPs and names from the `/etc/hosts/` file on the server.
 
 ## Network Namespaces
+
+When a container is created, we create a network namespace for it. Within its own network namespace, the container can have its own virtual routing interface, routing table and ARP table.
+
+### Creating network namespaces
+
+Let's create 2 network namespaces `red` and `blue`. For that we use,
+
+```shell
+ip netns add red
+ip netns add blue
+```
+
+To view all the network namespaces present on the system,
+
+```bash
+ip netns
+```
+
+### Exec in network namespaces
+
+To view all the interfaces,
+
+```shell
+ip link
+```
+
+
 
 ## Docker Networking
 
