@@ -420,7 +420,9 @@ ip netns exec blue arp
 
 ### How enable multiple namespace to inter-communicate ?
 
-![](https://raw.githubusercontent.com/aditya109/learning-k8s/a5821e04abcc0d86569ad9b827b130a1df3dc7aa/assets/multi-host-)
+![](https://raw.githubusercontent.com/aditya109/learning-k8s/assets/multi-interface-inter-connection.png)
+
+
 
 For this, we create a virtual network and a virtual switch, while connecting all the namespaces to the virtual switch.
 
