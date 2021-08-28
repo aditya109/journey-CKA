@@ -2,6 +2,33 @@
 
 ## Contents
 
+- [Switching and Routing](#switching-and-routing)
+- [DNS](#dns)
+  * [Record Types](#record-types)
+  * [nslookup](#nslookup)
+  * [dig](#dig)
+- [CoreDNS](#coredns)
+  * [Configuring a dedicated system as DNS (CoreDNS)](#configuring-a-dedicated-system-as-dns--coredns-)
+- [Network Namespaces](#network-namespaces)
+  * [Creating network namespaces](#creating-network-namespaces)
+  * [Exec in network namespaces](#exec-in-network-namespaces)
+  * [Connecting network interfaces](#connecting-network-interfaces)
+  * [How enable multiple namespace to inter-communicate ?](#how-enable-multiple-namespace-to-inter-communicate--)
+- [Docker Networking](#docker-networking)
+- [CNI](#cni)
+- [Cluster Networking](#cluster-networking)
+- [Pod Networking](#pod-networking)
+- [CNI in Kubernetes](#cni-in-kubernetes)
+- [CNI Weave](#cni-weave)
+- [IP Address Management - Weave](#ip-address-management---weave)
+- [Service Networking](#service-networking)
+- [DNS in Kubernetes](#dns-in-kubernetes)
+- [Core DNS in Kubernetes](#core-dns-in-kubernetes)
+- [Ingress](#ingress)
+- [Ingress - Annotations and rewrite-target](#ingress---annotations-and-rewrite-target)
+
+<small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
+
 ## Switching and Routing
 
 Let's assume that we have 2 systems A and B. How will they communicate to each other ??
@@ -312,6 +339,205 @@ To view all the interfaces,
 ```shell
 ip link
 ```
+
+To view interfaces in specific network interfaces, we use:
+
+```shell
+ip netns exec red ip link
+# or
+ip -n red link
+```
+
+> So here we prevented containers from pitching the host network interfaces.
+
+To display the ARP table for a particular IP address. It also shows all the entries of the ARP cache or table. 
+
+```shell
+arp
+```
+
+To ARP entries in a specific network interface, we use :
+
+```shell
+ip netns exec red arp
+```
+
+To display routing table entries we use:
+
+```shell
+route
+# for specific network
+ip netns exec red route
+```
+
+Network namespaces have no network connectivity, by default. And they cannot see their underlying host network.
+
+### Connecting network interfaces
+
+In order to connect to network interfaces together, we need a virtual cable or **pipe**. (virtual cable with two interfaces)
+
+First we create a pipe with end-interfaces called `veth-red` and `veth-blue`.
+
+```shell
+ip link add veth-red type veth peer name veth-blue
+```
+
+Now we need to attach pipe's end-interfaces to the respective network namespaces.
+
+```shell
+ip link set veth-red netns red
+ip link set veth-blue netns blue
+```
+
+ Now we need to assign IP addresses to the respective **pipe-end-interface**-**network-namespace** pair.
+
+```shell
+ip -n red addr add 192.168.15.1 dev veth-red
+ip -n blue addr add 192.168.15.2 dev veth-red
+```
+
+Now we need to bring the interface up, for which we use:
+
+```shell
+ip -n red link set veth-red up
+ip -n blue link set veth-blue up
+```
+
+Now you can ping the IP<sub>blue</sub> from red namespace.
+
+```shell
+ip netns exec red ping 192.168.15.2
+```
+
+You can view corresponding entries in respective namespace ARP tables as well.
+
+```shell
+ip netns exec red arp
+ip netns exec blue arp
+```
+
+> `arp` on hostname who show no similar entries at all, with respect to either `blue` or `red` namespace.
+
+### How enable multiple namespace to inter-communicate ?
+
+
+
+For this, we create a virtual network and a virtual switch, while connecting all the namespaces to the virtual switch.
+
+We first create a bridge using `Linux Bridge` called `v-net-0`. From the perspective of the host it is exactly similar to the interface.
+
+```shell
+ip link add v-net-0 type bridge
+```
+
+We can view it using `ip link` command.
+
+By default it is DOWN, so we need to turn it UP. For this, we use:
+
+```shell
+ip link set dev v-net-0 up
+```
+
+> To delete a virtual cable, we use:
+>
+> ```shell
+> ip -n red link del veth-red
+> ```
+>
+> Point to note here is when you delete one pipe-end-interface, the other one gets deleted immediately.
+
+We need a fresh pipes.
+
+```shell
+ip link add veth-red type veth peer name veth-red-br
+ip link add veth-blue type veth peer name veth-blue-br
+```
+
+Now we attach namespaces to the new pipes along with the bridge.
+
+```shell
+ip link set veth-red netns red
+ip link set veth-red-br master v-net-0
+
+ip link set veth-blue netns blue
+ip link set veth-blue-br master v-net-0
+```
+
+Now we attach IP addresses to the network namespaces.
+
+```shell
+ip -n red addr add 192.168.15.1 dev veth-red
+ip -n blue addr add 192.168.15.1 dev veth-blue
+```
+
+Now, we bring the respective interfaces `up`.
+
+```shell
+ip -n red link set veth-red up
+ip -n blue link set veth-blue up
+```
+
+### How to enable communication between host machine and bridge?
+
+
+
+```shell
+
+```
+
+```shell
+
+```
+
+
+
+
+
+
+
+```shell
+
+```
+
+```shell
+
+```
+
+
+
+
+
+
+
+```shell
+
+```
+
+```shell
+
+```
+
+
+
+
+
+
+
+```shell
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
