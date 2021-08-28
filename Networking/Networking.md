@@ -420,7 +420,7 @@ ip netns exec blue arp
 
 ### How enable multiple namespace to inter-communicate ?
 
-![](https://raw.githubusercontent.com/aditya109/learning-k8s/assets/multi-interface-inter-connection.png)
+![](https://raw.githubusercontent.com/aditya109/learning-k8s//main/assets/multi-interface-inter-connection.png)
 
 
 
