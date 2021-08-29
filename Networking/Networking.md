@@ -481,14 +481,23 @@ ip -n blue link set veth-blue up
 
 ### How to enable communication between host machine and bridge?
 
+![](https://github.com/aditya109/learning-k8s/blob/main/assets/host-interface-communication.jpg?raw=true)
 
+For this, we attach IP address to the bridge `v-net-0`.
 
 ```shell
-
+ip addr add 192.168.15.5/24 dev v-net-0
 ```
 
-```shell
+Ping `192.168.15.5` from hostname.
 
+```shell
+ping 192.168.15.5
+```
+
+### How to enable connection Linux Bridge to external LAN connection ?
+
+```shell
 ```
 
 
