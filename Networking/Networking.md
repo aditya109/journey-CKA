@@ -13,7 +13,7 @@
   * [Creating network namespaces](#creating-network-namespaces)
   * [Exec in network namespaces](#exec-in-network-namespaces)
   * [Connecting network interfaces](#connecting-network-interfaces)
-  * [How enable multiple namespace to inter-communicate ?](#how-enable-multiple-namespace-to-inter-communicate--)
+  * [How enable multiple namespace to inter-communicate](#how-enable-multiple-namespace-to-inter-communicate)
 - [Docker Networking](#docker-networking)
 - [CNI](#cni)
 - [Cluster Networking](#cluster-networking)
@@ -418,7 +418,7 @@ ip netns exec blue arp
 
 > `arp` on hostname who show no similar entries at all, with respect to either `blue` or `red` namespace.
 
-### How enable multiple namespace to inter-communicate ?
+### Enabling multiple namespaces for inter-communication
 
 ![](https://raw.githubusercontent.com/aditya109/learning-k8s//main/assets/multi-interface-inter-connection.png)
 
@@ -479,7 +479,7 @@ ip -n red link set veth-red up
 ip -n blue link set veth-blue up
 ```
 
-### How to enable communication between host machine and bridge?
+### Enabling communication between host machine and bridge
 
 ![](https://github.com/aditya109/learning-k8s/blob/main/assets/host-interface-communication.jpg?raw=true)
 
@@ -495,9 +495,18 @@ Ping `192.168.15.5` from hostname.
 ping 192.168.15.5
 ```
 
-### How to enable connection Linux Bridge to external LAN connection ?
+### Enabling connection Linux Bridge to external LAN connection (192.168.1.0)
+
+If we directly try to ping this external IP `192.168.1.3` (which connected to external router `192.168.1.0`)from `blue` namespace, let's see what happens.
 
 ```shell
+# first it checks in the routing table for existing connection
+ip netns exec blue route
+
+# as there would be no relevant entries present for such IP
+# directly pinging external IP 192.168.1.3
+>ip netns exec blue ping 192.168.1.3
+Connect: Network is unreachable
 ```
 
 
