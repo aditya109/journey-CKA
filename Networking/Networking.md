@@ -213,8 +213,6 @@ A new entry for Google DNS can be added to the local DNS server.
 Forward All to 8.8.8.8
 ```
 
-
-
 Let's say there is an org DNS connected to host-A which has the following records:
 
 ```bash
@@ -505,63 +503,500 @@ ip netns exec blue route
 
 # as there would be no relevant entries present for such IP
 # directly pinging external IP 192.168.1.3
->ip netns exec blue ping 192.168.1.3
+ip netns exec blue ping 192.168.1.3
 Connect: Network is unreachable
 ```
 
+![](https://github.com/aditya109/learning-k8s/blob/main/assets/external-network-connection-to-namespace.jpg?raw=true)
 
-
-
-
-
+**Solution: ** We need to ping the external IP `192.168.1.3` via external router `192.168.1.0`.
 
 ```shell
+ip netns exec blue ip router add 192.168.1.0/24 via 192.168.15.5
 
+# now if we ping external IP 192.168.1.3
+ip netns exec blue ping 192.168.1.3
+PING 192.168.1.3 (192.168.1.3) 56(84) bytes of data.
+
+# but we can see we do not get a response back, as the external router doesn't have our host IP; for which, we need NAT enabled on our gateway here.
+iptables -t nat -A POSTROUTING -s 192.168.15.0/24 -j MASQUERADE
+
+# now when we ping the outside world
+ip netns exec blue ping 192.168.1.3
+PING 192.168.1.3 (192.168.1.3) 56(84) bytes of data.
+64 bytes from 192.168.1.3: icmp_seq=1 ttl=63 time=0.587 ms
+64 bytes from 192.168.1.3: icmp_seq=1 ttl=63 time=0.466 ms
 ```
+
+### Connectivity from network namespaces to internet
 
 ```shell
+ip netns exec blue ping 8.8.8.8
+Connect: Network is unreachable
 
+# the reason again here is routing tables entry is missing
+ip netns exec blue route
+
+# adding the default routing entry
+ip netns exec blue ip route add default via 192.168.15.5
+
+# pinging now would work
+ip netns exec blue ping 8.8.8.8
+PING 8.8.8.8 (8.8.8.8) 56(84) bytes of data.
+64 bytes from 8.8.8.8: icmp_seq=1 ttl=63 time=0.587 ms
+64 bytes from 8.8.8.8: icmp_seq=1 ttl=63 time=0.466 ms
 ```
 
-
-
-
-
-
+### Connectivity from internet to network namespaces 
 
 ```shell
-
+ping 192.168.15.2
+Connect: Network is unreachable
 ```
+
+One way, is to let them know that network namespace can be reached via host IP, but that would not be secure, as we would be giving away our routing setup.
+
+Second way is to setup an IPTABLE routing configuration.
 
 ```shell
-
+iptables -t nat -a PREROUTING --dport 80 --to-destination 192.168.15.2:80 -j DNAT
 ```
 
-
-
-
-
-
-
-```shell
-
-```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+> **Notes:**
+>
+> 1. While testing the Network Namespaces, if you come across issues where you can't ping one namespace from the other, make sure you set the NETMASK while setting IP Address. i.e.: `192.168.1.10/24`
+>
+>    ```shell
+>    ip -n red addr add 192.168.1.10/24 dev veth-red
+>    ```
+>
+> 2. Another thing to check is Firewall D/IP Table rules. Either add rules to IP Tables to allow traffic from one namespace to another. Or disable IP Tables all together (Only in a learning environment).
 
 ## Docker Networking
+
+Let's assume a single server, with Docker installed on it. It has an `eth0` interface with IP `192.168.1.10`.
+
+
+
+ 
+
+
+
+```shell
+
+```
+
+
+
+ 
+
+
+
+ 
+
+
+
+```shell
+
+```
+
+
+
+ 
+
+
+
+ 
+
+
+
+```shell
+
+```
+
+
+
+ 
+
+
+
+ 
+
+
+
+```shell
+
+```
+
+
+
+ 
+
+
+
+ 
+
+
+
+```shell
+
+```
+
+
+
+ 
+
+
+
+ 
+
+
+
+```shell
+
+```
+
+
+
+ 
+
+
+
+ 
+
+
+
+```shell
+
+```
+
+
+
+ 
+
+
+
+ 
+
+
+
+```shell
+
+```
+
+
+
+ 
+
+
+
+ 
+
+
+
+```shell
+
+```
+
+
+
+ 
+
+
+
+ 
+
+
+
+```shell
+
+```
+
+
+
+ 
+
+
+
+ 
+
+
+
+```shell
+
+```
+
+
+
+ 
+
+
+
+ 
+
+
+
+```shell
+
+```
+
+
+
+ 
+
+
+
+ 
+
+
+
+```shell
+
+```
+
+
+
+ 
+
+
+
+ 
+
+
+
+```shell
+
+```
+
+
+
+ 
+
+
+
+ 
+
+
+
+```shell
+
+```
+
+
+
+ 
+
+
+
+ 
+
+
+
+```shell
+
+```
+
+
+
+ 
+
+
+
+ 
+
+
+
+```shell
+
+```
+
+
+
+ 
+
+
+
+ 
+
+
+
+```shell
+
+```
+
+
+
+ 
+
+
+
+ 
+
+
+
+```shell
+
+```
+
+
+
+ 
+
+
+
+ 
+
+
+
+```shell
+
+```
+
+
+
+ 
+
+
+
+ 
+
+
+
+```shell
+
+```
+
+
+
+ 
+
+
+
+ 
+
+
+
+```shell
+
+```
+
+
+
+ 
+
+
+
+ 
+
+
+
+```shell
+
+```
+
+
+
+ 
+
+
+
+ 
+
+
+
+```shell
+
+```
+
+
+
+ 
+
+
+
+ 
+
+
+
+```shell
+
+```
+
+
+
+ 
+
+
+
+ 
+
+
+
+```shell
+
+```
+
+
+
+ 
+
+
+
+ 
+
+
+
+```shell
+
+```
+
+
+
+ 
+
+
+
+ 
+
+
+
+```shell
+
+```
+
+
+
+ 
+
+
+
+ 
+
+
+
+```shell
+
+```
+
+
+
+ 
+
+
+
+ 
+
+
+
+```shell
+
+```
+
+
+
+ 
+
+
 
 ## CNI
 
