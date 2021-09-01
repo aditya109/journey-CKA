@@ -574,9 +574,28 @@ iptables -t nat -a PREROUTING --dport 80 --to-destination 192.168.15.2:80 -j DNA
 
 ## Docker Networking
 
-Let's assume a single server, with Docker installed on it. It has an `eth0` interface with IP `192.168.1.10`.
+Let's assume a single server, with Docker installed on it. It has an `eth0` interface with IP `192.168.1.10` which is connected to the local network.
 
+The following network options are available to us while creating containers:
 
+1. `docker run --network none nginx` 
+   Here the docker container is not attached to any network. There is no incoming and outgoing connection. This is complete *network isolation*.
+
+2. `docker run --network host nginx`
+   Here the docker container is attached to host network on port 80, meaning a container running a web application on port 80 will be able to run on URI `https://192.168.1.10:80`.
+
+   > Only one instance of such a container can be run, only one application can use a port at the same time. 
+
+3. `docker run nginx`
+   Here the docker container is attached to a bridge network where each container get their own respective private IP. 
+
+   Docker creates this network as `bridge`, as that is the name visible on the output of `docker network ls`, but on the host, the network name created is `docker0`(which is visible in the output of `ip link`). 
+
+   So `docker0` and `bridge` are one and the same thing.
+
+   The `docker0` is given an IP which can be viewed with `ip addr` command. The `ip link` also tells us that `docker0` interface is down by-default. Docker also creates a network namespace for it. You can view that using `ip netns`. 
+
+   **How does Docker attach the container to the bridge network ?**
 
  
 
