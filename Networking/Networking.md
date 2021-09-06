@@ -595,7 +595,7 @@ The following network options are available to us while creating containers:
 
    The `docker0` is given an IP which can be viewed with `ip addr` command. The `ip link` also tells us that `docker0` interface is down by-default. Docker also creates a network namespace for it. You can view that using `ip netns`. 
 
-   **How does Docker attach the container to the bridge network ?**
+**How does Docker attach the container to the bridge network ?**
 
  
 
