@@ -582,7 +582,7 @@ The following network options are available to us while creating containers:
    Here the docker container is not attached to any network. There is no incoming and outgoing connection. This is complete *network isolation*.
 
 2. `docker run --network host nginx`
-   Here the docker container is attached to host network on port 80, meaning a container running a web application on port 80 will be able to run on URI `https://192.168.1.10:80`.
+   Here the docker container is attached to host network on port **80**, meaning a container running a web application on port 80 will be able to run on URI `https://192.168.1.10:80`.
 
    > Only one instance of such a container can be run, only one application can use a port at the same time. 
 
