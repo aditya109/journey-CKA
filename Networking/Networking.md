@@ -694,9 +694,9 @@ There are some pre requisites for the cluster:
 1. Each node must have an IP, node-name, and MAC address. 
 2. Some ports must be open on the nodes as well.
 
+![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/assets/mandatory-port-openings-on-node.png)
 
-
-
+![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/assets/mandatory-port-openings-on-master-node.png)
 
 **Master node(s)-**
 
@@ -715,131 +715,164 @@ There are some pre requisites for the cluster:
 | TCP      | Inbound   | 10250       | Kubernetes API      | Self, control plane |
 | TCP      | Inbound   | 30000-32767 | NodePort Services** | All                 |
 
-
-
-
-
- 
+**Handy Commands for debugging networking issues on cluster**
 
 ```shell
-
+ip link
 ```
 
 ```shell
-
+ip addr
 ```
 
 ```shell
-
+ip addr add 192.168.1.10/24 dev eth0
 ```
 
 ```shell
-
+ip route
 ```
 
 ```shell
-
+ip route add 192.168.1.10/24 via 192.168.2.1
 ```
 
 ```shell
-
+cat /proc/sys/net/ipv4/ip_forward
+1
 ```
 
 ```shell
-
+arp
 ```
 
 ```shell
-
+netstat -plnt
 ```
+
+**What is the network interface configured for cluster connectivity on the master node?**
 
 ```shell
+kubectl get nodes -o wide | grep controlplane
 
+controlplane   Ready    control-plane,master   9m47s   v1.20.0   10.27.140.6   <none>        Ubuntu 18.04.5 LTS   5.4.0-1052-gcp   docker://19.3.0
+
+# copy internal ip from there
+
+ip a | grep -B2 10.27.140.6
+7180: eth0@if7181: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1450 qdisc noqueue state UP group default 
+    link/ether 02:42:0a:1b:8c:06 brd ff:ff:ff:ff:ff:ff link-netnsid 0
+    inet 10.27.140.6/24 brd 10.27.140.255 scope global eth0
+
+# eth0 is the network interface
 ```
+
+**What is the MAC address of node01 ?**
 
 ```shell
-
+arp node01
+Address                  HWtype  HWaddress           Flags Mask            Iface
+10.27.140.8              ether   02:42:0a:1b:8c:07   C                     eth0
 ```
+
+**What is the IP address of the Default Gateway?**
 
 ```shell
-
+ip route show default
+default via 172.17.0.1 dev eth1 
 ```
+
+**Notice that ETCD is listening on two ports. Which of these have more client connections established?**
 
 ```shell
-
+netstat -anp | grep etcd | grep PORT_NUMBER | wc -l
 ```
 
-```shell
 
-```
 
-```shell
+## How to implement the Kubernetes networking model
 
-```
-
-```shell
-
-```
-
-```shell
-
-```
-
-```shell
-
-```
-
-```shell
-
-```
-
-```shell
-
-```
-
-```shell
-
-```
-
-```shell
-
-```
-
-```shell
-
-```
-
-```shell
-
-```
-
-```shell
-
-```
-
-```shell
-
-```
-
-```shell
-
-```
-
-```shell
-
-```
-
-```shell
-
-```
-
-```shell
-
-```
-
- 
+[Creating Highly Available clusters with kubeadm | Kubernetes](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/high-availability/#steps-for-the-first-control-plane-node)
 
 ## Pod Networking
+
+Requisites for Networking Model
+
+- Every POD should have an IP Address.
+- Every POD should be able to communicate with every other POD in the same node.
+- Every POD should be able to communicate with every other POD in the same node on other nodes with out NAT.
+
+```shell
+
+```
+
+```shell
+
+```
+
+```shell
+
+```
+
+```shell
+
+```
+
+```shell
+
+```
+
+```shell
+
+```
+
+```shell
+
+```
+
+```shell
+
+```
+
+```shell
+
+```
+
+```shell
+
+```
+
+```shell
+
+```
+
+```shell
+
+```
+
+```shell
+
+```
+
+```shell
+
+```
+
+```shell
+
+```
+
+```shell
+
+```
+
+ 
+
+
+
+
+
+
 
 ## CNI in Kubernetes
 
