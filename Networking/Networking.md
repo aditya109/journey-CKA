@@ -687,11 +687,18 @@ Also, `weaveworks`, `flannel`, `cilium`, `vmwareNSX`, etc.
 
 ## Cluster Networking
 
-![](https://github.com/aditya109/learning-k8s/blob/main/assets/cluster-networking.svg?raw=true)
+![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/assets/cluster-networking.svg)
+
+There are some pre requisites for the cluster:
+
+1. Each node must have an IP, node-name, and MAC address. 
+2. Some ports must be open on the nodes as well.
 
 
 
-Master node(s)-
+
+
+**Master node(s)-**
 
 | Protocol | Direction | Port Range | Purpose                 | Used by              |
 | -------- | --------- | ---------- | ----------------------- | -------------------- |
@@ -701,7 +708,7 @@ Master node(s)-
 | TCP      | Inbound   | 10251      | kube-scheduler          | Self                 |
 | TCP      | Inbound   | 10252      | kube-controller manager | Self                 |
 
-Worker node(s)
+**Worker node(s)-**
 
 | Protocol | Direction | Port Range  | Purpose             | Used by             |
 | -------- | --------- | ----------- | ------------------- | ------------------- |
