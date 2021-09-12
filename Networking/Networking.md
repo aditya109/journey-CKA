@@ -4,16 +4,16 @@
 
 - [Switching and Routing](#switching-and-routing)
 - [DNS](#dns)
-  * [Record Types](#record-types)
-  * [nslookup](#nslookup)
-  * [dig](#dig)
+  - [Record Types](#record-types)
+  - [nslookup](#nslookup)
+  - [dig](#dig)
 - [CoreDNS](#coredns)
-  * [Configuring a dedicated system as DNS (CoreDNS)](#configuring-a-dedicated-system-as-dns--coredns-)
+  - [Configuring a dedicated system as DNS (CoreDNS)](#configuring-a-dedicated-system-as-dns--coredns-)
 - [Network Namespaces](#network-namespaces)
-  * [Creating network namespaces](#creating-network-namespaces)
-  * [Exec in network namespaces](#exec-in-network-namespaces)
-  * [Connecting network interfaces](#connecting-network-interfaces)
-  * [How enable multiple namespace to inter-communicate](#how-enable-multiple-namespace-to-inter-communicate)
+  - [Creating network namespaces](#creating-network-namespaces)
+  - [Exec in network namespaces](#exec-in-network-namespaces)
+  - [Connecting network interfaces](#connecting-network-interfaces)
+  - [How enable multiple namespace to inter-communicate](#how-enable-multiple-namespace-to-inter-communicate)
 - [Docker Networking](#docker-networking)
 - [CNI](#cni)
 - [Cluster Networking](#cluster-networking)
@@ -78,7 +78,7 @@ ip route add 192.168.2.0/24 via 192.168.1.1
 
 > This has to be done for all the target hosts.
 
-To connect the host to the internet `172.217.194.0/24`, we need to connect router to the internet. Then add a new routing configuration to the host, 
+To connect the host to the internet `172.217.194.0/24`, we need to connect router to the internet. Then add a new routing configuration to the host,
 
 ```bash
 ip route add 172.217.194.0/24 via 192.168.2.1
@@ -119,7 +119,7 @@ and in C, we need to have routing configurations in routing table,
 ip route add 192.168.1.0/24 via 192.168.2.6
 ```
 
-Now, we can ping IP<sub>C</sub> from A, but don't get any response from C, reason being by-default the Linux does not allow data packet forwarding. To enable that, in host C, overwrite value in `/proc/sys/net/ipv4/ip_forward`  file to 1 from 0.
+Now, we can ping IP<sub>C</sub> from A, but don't get any response from C, reason being by-default the Linux does not allow data packet forwarding. To enable that, in host C, overwrite value in `/proc/sys/net/ipv4/ip_forward` file to 1 from 0.
 
 ```bash
 echo 1 > /proc/sys/net/ipv4/ip_forward
@@ -147,7 +147,7 @@ cat >> /etc/hosts
 192.168.1.11	db
 ```
 
-Now, `/etc/hosts` is the source of truth for host A. Whatever it sees in the `/etc/hosts` file it thinks it is truth and starts sending requests accordingly. 
+Now, `/etc/hosts` is the source of truth for host A. Whatever it sees in the `/etc/hosts` file it thinks it is truth and starts sending requests accordingly.
 
 The problem here is the entries in `/etc/hosts` file might not always be true. For example, in host B, running `hostname` command reveals that the actual name of host B is `host-2`.
 
@@ -225,7 +225,7 @@ Let's say there is an org DNS connected to host-A which has the following record
 192.168.1.15 		hr.mycompany.com
 ```
 
-Now, whenever I hit `web`, it should re-route the traffic to `web.mycompany.com`. 
+Now, whenever I hit `web`, it should re-route the traffic to `web.mycompany.com`.
 
 For that, we need to add an entry to `/etc/resolv.conf`.
 
@@ -297,18 +297,18 @@ dig www.google.com
    ```bash
    tar -xzvf coredns_1.8.4_linux_arm64.tgz
    ```
-   
+
    ```bash
    ./coredns
    ```
-   
+
 2. Run the executable to start a DNS server. (default port 53)
 
 3. We haven't specified any IP-hostname mappings for which you need to provide some configurations.
 
    1. For that, put all of the entries into the DNS servers `/etc/hosts/` file.
 
-4. And then we configure CoreDNS to use that file. CoreDNS loads it’s configuration from a file named `Corefile`. 
+4. And then we configure CoreDNS to use that file. CoreDNS loads it’s configuration from a file named `Corefile`.
    Here is a simple configuration that instructs CoreDNS to fetch the IP to hostname mappings from the file `/etc/hosts`. When DNS server is run, it now picks the IPs and names from the `/etc/hosts/` file on the server.
 
 ## Network Namespaces
@@ -348,7 +348,7 @@ ip -n red link
 
 > So here we prevented containers from pitching the host network interfaces.
 
-To display the ARP table for a particular IP address. It also shows all the entries of the ARP cache or table. 
+To display the ARP table for a particular IP address. It also shows all the entries of the ARP cache or table.
 
 ```shell
 arp
@@ -387,7 +387,7 @@ ip link set veth-red netns red
 ip link set veth-blue netns blue
 ```
 
- Now we need to assign IP addresses to the respective **pipe-end-interface**-**network-namespace** pair.
+Now we need to assign IP addresses to the respective **pipe-end-interface**-**network-namespace** pair.
 
 ```shell
 ip -n red addr add 192.168.15.1 dev veth-red
@@ -419,8 +419,6 @@ ip netns exec blue arp
 ### Enabling multiple namespaces for inter-communication
 
 ![](https://raw.githubusercontent.com/aditya109/learning-k8s//main/assets/multi-interface-inter-connection.png)
-
-
 
 For this, we create a virtual network and a virtual switch, while connecting all the namespaces to the virtual switch.
 
@@ -547,7 +545,7 @@ PING 8.8.8.8 (8.8.8.8) 56(84) bytes of data.
 64 bytes from 8.8.8.8: icmp_seq=1 ttl=63 time=0.466 ms
 ```
 
-### Connectivity from internet to network namespaces 
+### Connectivity from internet to network namespaces
 
 ```shell
 ping 192.168.15.2
@@ -578,448 +576,259 @@ Let's assume a single server, with Docker installed on it. It has an `eth0` inte
 
 The following network options are available to us while creating containers:
 
-1. `docker run --network none nginx` 
-   Here the docker container is not attached to any network. There is no incoming and outgoing connection. This is complete *network isolation*.
+1. `docker run --network none nginx`
+   Here the docker container is not attached to any network. There is no incoming and outgoing connection. This is complete _network isolation_.
 
 2. `docker run --network host nginx`
    Here the docker container is attached to host network on port **80**, meaning a container running a web application on port 80 will be able to run on URI `https://192.168.1.10:80`.
 
-   > Only one instance of such a container can be run, only one application can use a port at the same time. 
+   > Only one instance of such a container can be run, only one application can use a port at the same time.
 
 3. `docker run nginx`
-   Here the docker container is attached to a bridge network where each container get their own respective private IP. 
+   Here the docker container is attached to a bridge network where each container get their own respective private IP.
 
-   Docker creates this network as `bridge`, as that is the name visible on the output of `docker network ls`, but on the host, the network name created is `docker0`(which is visible in the output of `ip link`). 
+   Docker creates this network as `bridge`, as that is the name visible on the output of `docker network ls`, but on the host, the network name created is `docker0`(which is visible in the output of `ip link`).
 
    So `docker0` and `bridge` are one and the same thing.
 
-   The `docker0` is given an IP which can be viewed with `ip addr` command. The `ip link` also tells us that `docker0` interface is down by-default. Docker also creates a network namespace for it. You can view that using `ip netns`. 
+   The `docker0` is given an IP which can be viewed with `ip addr` command. The `ip link` also tells us that `docker0` interface is down by-default. Docker also creates a network namespace for it. You can view that using `ip netns`.
 
 **How does Docker attach the container to the bridge network ?**
 
- 
+Whenever a container is created, Docker creates a network namespace for it. We can view the namespaces created by Docker using `ip netns` command (slightly modified version).
+`ip netns exec "${container_id}" ip -s link show eth0`
 
+![](https://github.com/aditya109/learning-k8s/blob/main/assets/docker-networking.png?raw=true)
 
+Docker creates a virtual cable and attaches its one end to the bridge network of Docker and the other end is tied to the container itself.
 
-```shell
+Here, if we use the following command,
 
+```bash
+ip netns
+b3165c10a92b
 ```
 
+Then if you use `ip link`, you would see `vethbb1c343@if7` in the output.
 
+Also, the other end of the virtual cable can be viewed by the same command `ip link`.
 
- 
-
-
-
- 
-
-
-
-```shell
-
+```bash
+ip -n b3165c10a92b link
+eth0@if8
 ```
 
+The container gets assigned a separate IP which can be viewed by `ip addr`
 
-
- 
-
-
-
- 
-
-
-
-```shell
-
+```bash
+ip -n b3165c10a92b addr
 ```
 
+Same process is iterated multiple times.
 
+On being connected to bridge network, the container if is hosting a web application, it can be accessed docker on port **80**, but not from the host. 
 
- 
+For the doing that, we need to publish the ports.
 
+`docker run --publish HOST_PORT:CONTAINER_PORT <container-name>`
 
-
- 
-
-
-
-```shell
-
-```
-
-
-
- 
-
-
-
- 
-
-
+**How to view IP rules of Docker ?**
 
 ```shell
-
+iptables -nvL -t nat
+Chain Docker (2 references)
 ```
 
-
-
- 
-
-
-
- 
-
-
-
-```shell
-
-```
-
-
-
- 
-
-
-
- 
-
-
-
-```shell
-
-```
-
-
-
- 
-
-
-
- 
-
-
-
-```shell
-
-```
-
-
-
- 
-
-
-
- 
-
-
-
-```shell
-
-```
-
-
-
- 
-
-
-
- 
-
-
-
-```shell
-
-```
-
-
-
- 
-
-
-
- 
-
-
-
-```shell
-
-```
-
-
-
- 
-
-
-
- 
-
-
-
-```shell
-
-```
-
-
-
- 
-
-
-
- 
-
-
-
-```shell
-
-```
-
-
-
- 
-
-
-
- 
-
-
-
-```shell
-
-```
-
-
-
- 
-
-
-
- 
-
-
-
-```shell
-
-```
-
-
-
- 
-
-
-
- 
-
-
-
-```shell
-
-```
-
-
-
- 
-
-
-
- 
-
-
-
-```shell
-
-```
-
-
-
- 
-
-
-
- 
-
-
-
-```shell
-
-```
-
-
-
- 
-
-
-
- 
-
-
-
-```shell
-
-```
-
-
-
- 
-
-
-
- 
-
-
-
-```shell
-
-```
-
-
-
- 
-
-
-
- 
-
-
-
-```shell
-
-```
-
-
-
- 
-
-
-
- 
-
-
-
-```shell
-
-```
-
-
-
- 
-
-
-
- 
-
-
-
-```shell
-
-```
-
-
-
- 
-
-
-
- 
-
-
-
-```shell
-
-```
-
-
-
- 
-
-
-
- 
-
-
-
-```shell
-
-```
-
-
-
- 
-
-
-
- 
-
-
-
-```shell
-
-```
-
-
-
- 
-
-
-
- 
-
-
-
-```shell
-
-```
-
-
-
- 
-
-
-
- 
-
-
-
-```shell
-
-```
-
-
-
- 
-
-
-
- 
-
-
-
-```shell
-
-```
-
-
-
- 
-
-
-
- 
-
-
-
-```shell
-
-```
-
-
-
- 
-
-
+| target | prot | opt  | source   | destination |                                |
+| ------ | ---- | ---- | -------- | ----------- | ------------------------------ |
+| RETURN | all  | --   | anywhere | anywhere    |                                |
+| DNAT   | tcp  | --   | anywhere | anywhere    | tcp dpt:8080 to :172.17.0.2:80 |
 
 ## CNI
 
+***Container Runtime***
+
+1. Create Network Namespaces
+
+***Bridge*** `bridge add <cid> <namespaceid>`
+
+2. Create Bridge Network/Interface
+3. Create VETH Pairs (pipes)
+4. Attach pipes to Namespaces
+5. Attach pipes to Bridge
+6. Assign IP addresses
+7. Bring the interfaces up
+8. Enable NAT -IP Masquerade
+
+### CNI Directives For Container Runtime
+
+- Container Runtime must create network namespace.
+- Identify network the container must attach to.
+- Container Runtime to invoke Network Plugin (bridge) when container is Added.
+- Container Runtime to invoke Network Plugin (bridge) when container is Deleted.
+- JSON format of the Network Configuration.
+
+Examples, Kubernetes, rkt, Mesos, etc.
+
+> Reason why Docker does not follow CNI ?
+>
+> It has its own networking interface standards, called Container Network Model (CNM).
+
+### CNI Directives for Network Plugins
+
+- Must support command line arguments ADD/DEL/CHECK
+- Must support parameter container id, network ns, etc.
+- Must manage IP Address assignment to PODs.
+- Must return results in a specific format.
+
+Examples, Bridge, VLAN, IPVLAN, MACVLAN, WINDOWS, DHCP, host-local.
+
+Also, `weaveworks`, `flannel`, `cilium`, `vmwareNSX`, etc.
+
 ## Cluster Networking
+
+
+
+Master node(s)
+
+| Protocol | Direction | Port Range | Purpose                 | Used by              |
+| -------- | --------- | ---------- | ----------------------- | -------------------- |
+| TCP      | Inbound   | 6443*      | Kubernetes API server   | All                  |
+| TCP      | Inbound   | 2379-2380  | etcd server client API  | kube-apiserver, etcd |
+| TCP      | Inbound   | 10250      | Kubelet API             | Self, control plane  |
+| TCP      | Inbound   | 10251      | kube-scheduler          | Self                 |
+| TCP      | Inbound   | 10252      | kube-controller manager | Self                 |
+
+Worker node(s)
+
+| Protocol | Direction | Port Range  | Purpose             | Used by             |
+| -------- | --------- | ----------- | ------------------- | ------------------- |
+| TCP      | Inbound   | 10250       | Kubernetes API      | Self, control plane |
+| TCP      | Inbound   | 30000-32767 | NodePort Services** | All                 |
+
+
+
+
+
+ 
+
+```shell
+
+```
+
+```shell
+
+```
+
+```shell
+
+```
+
+```shell
+
+```
+
+```shell
+
+```
+
+```shell
+
+```
+
+```shell
+
+```
+
+```shell
+
+```
+
+```shell
+
+```
+
+```shell
+
+```
+
+```shell
+
+```
+
+```shell
+
+```
+
+```shell
+
+```
+
+```shell
+
+```
+
+```shell
+
+```
+
+```shell
+
+```
+
+```shell
+
+```
+
+```shell
+
+```
+
+```shell
+
+```
+
+```shell
+
+```
+
+```shell
+
+```
+
+```shell
+
+```
+
+```shell
+
+```
+
+```shell
+
+```
+
+```shell
+
+```
+
+```shell
+
+```
+
+```shell
+
+```
+
+```shell
+
+```
+
+```shell
+
+```
+
+ 
 
 ## Pod Networking
 
@@ -1038,4 +847,3 @@ The following network options are available to us while creating containers:
 ## Ingress
 
 ## Ingress - Annotations and rewrite-target
-
