@@ -687,9 +687,9 @@ Also, `weaveworks`, `flannel`, `cilium`, `vmwareNSX`, etc.
 
 ## Cluster Networking
 
+![](https://github.com/aditya109/learning-k8s/blob/main/assets/cluster-networking.svg?raw=true)
 
-
-Master node(s)
+Master node(s)-
 
 | Protocol | Direction | Port Range | Purpose                 | Used by              |
 | -------- | --------- | ---------- | ----------------------- | -------------------- |
