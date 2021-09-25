@@ -802,20 +802,64 @@ Requisites for Networking Model
 - Every POD should be able to communicate with every other POD in the same node.
 - Every POD should be able to communicate with every other POD in the same node on other nodes with out NAT.
 
-```shell
+Example,
 
+Let's say we have 3 nodes: 
+
+1. 192.168.1.11
+2. 192.168.1.12
+3. 192.168.1.13
+
+These 3 nodes are attached to a LAN at 192.168.1.0
+
+Now on each node, we create a bridge network
+
+```shell
+ip link add v-net-0 type bridge 
+# on all 3 nodes and bring them up
+ip link set dev v-net-0 up
 ```
 
-```shell
+We then assign separate subnetted IPs to all the 3 nodes.
 
+```shell
+# on node 1
+ip addr add 10.244.1.1/24 dev v-net-0
+# on node 2
+ip addr add 10.244.2.1/24 dev v-net-0
+# on node 3
+ip addr add 10.244.3.1/24 dev v-net-0
 ```
 
-```shell
+Then we write and execute `net-script.sh` a script file to run post every pod creation on node 1.
 
+```shell
+# create veth pair
+ip link add .....
+
+# attach veth pair
+ip link set .....
+ip link set .....
+
+# assign IP Address
+ip -n <namespace> addr add .....
+ip -n <namespace> route add .....
+
+# bring up interface
+ip -n <namespace> link set .....
 ```
 
-```shell
+The same is done for all the nodes, which establishes the communication between pods inside the nodes.
 
+To esatablish communication between pods in node 1 and pods in node 2 is 
+
+```shell
+podOnNode1$ ping 10.244.2.2 #ip of pod on node 2
+Connect: Network is unreachable
+
+node1$ ip route add 10.244.2.2 via 192.168.1.12
+podOnNode1$ ping 10.244.2.2 #ip of pod on node 2
+64 bytes from 8.8.8.8: icmp_seq==1 tt=63 time=0.587 ms
 ```
 
 ```shell
