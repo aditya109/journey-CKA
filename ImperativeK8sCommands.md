@@ -47,5 +47,11 @@
    kubectl get pods --all-
    ```
 
+9. Get all resources in a namespaceL
+
+   ```bash
+   kubectl api-resources --verbs=list --namespaced -o name | xargs -n 1 kubectl get --show-kind --ignore-not-found -l <label>=<value> -n <namespace>
+   ```
+   
    
 
