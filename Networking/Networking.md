@@ -862,21 +862,64 @@ podOnNode1$ ping 10.244.2.2 #ip of pod on node 2
 64 bytes from 8.8.8.8: icmp_seq==1 tt=63 time=0.587 ms
 ```
 
-```shell
+Now, the same is done for all the nodes' containers. This works fine in this simple setup, but would require a lot more configuration in large workload cluster. 
 
-```
+It is usually advised to do the same on a router if the network has any. But the problem remains that the same set of instructions has to be run each time a container is created.
 
-```shell
-
-```
+This is where CNI comes into picture, helping Kubernetes, guiding it to the protocol for how the script would look like.
 
 ```shell
+# net-script.sh
 
+#ADD)
+# create veth pair
+# attach veth pair
+# assign IP Address
+# bring up interface
+
+# DEL)
+# delete veth pair
 ```
+
+So each time a container is created, the `kubelet` looks for the CNI configuration in the directory specified during the time of creation.
+
+```sh
+--cni-conf-dir=/etc/cni/net.d
+```
+
+Then, it looks for the script in the similarily specified directory.
 
 ```shell
-
+--cni-bin-dir=/etc/cni/bin
 ```
+
+It then executes the script with the `add` parameter alongwith container-name and namespace. 
+
+```shell
+./net-script.sh add <container> <namespace>
+```
+
+### CNI in Kubernetes
+
+As per CNI,
+
+- Container Runtime must create network namespace.
+- Identify network the container must attach to.
+- Container Runtime to invoke Network Plugin (bridge) when container is ADDed.
+- Containe Runtime to invoke Network Plugin (bridge) when container is DELeted.
+- JSON format of the Network Configuration.
+
+### CNI Weaveworks
+
+Weavework run peer to peer setup, where in it places a `Weavework` daemon/service on every running node. The communication inside a node happens between `weavework` daemon and `pods`, but outside the node happens between `weavework` daemons. 
+
+To deploy `weavework` daemons on cluster, we run,
+
+```shell
+kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+```
+
+To view `weavework` pods, we use `kubectl get pods -n kube-system`
 
 ```shell
 
@@ -918,9 +961,7 @@ podOnNode1$ ping 10.244.2.2 #ip of pod on node 2
 
 
 
-## CNI in Kubernetes
-
-## CNI Weave
+## 
 
 ## IP Address Management - Weave
 

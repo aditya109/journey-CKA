@@ -53,5 +53,25 @@
    kubectl api-resources --verbs=list --namespaced -o name | xargs -n 1 kubectl get --show-kind --ignore-not-found -l <label>=<value> -n <namespace>
    ```
    
-   
+10. Inspect the kubelet service and identify the network plugin configured for Kubernetes.
+
+    ```sh
+    ps -aux | grep kubelet | grep --color network-plugin=
+    ```
+
+    
+
+11. To check CNI solution applied on the system.
+
+    ```shell
+    ll /opt/cni/bin
+    ```
+
+12. What is the CNI plugin configured to be used on this kubernetes cluster?
+
+    ```sh
+    ls /etc/cni/net.d/
+    ```
+
+    
 
