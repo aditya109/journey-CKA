@@ -4,22 +4,29 @@
 
 - [Switching and Routing](#switching-and-routing)
 - [DNS](#dns)
-  - [Record Types](#record-types)
-  - [nslookup](#nslookup)
-  - [dig](#dig)
+  * [Record Types](#record-types)
+  * [nslookup](#nslookup)
+  * [dig](#dig)
 - [CoreDNS](#coredns)
-  - [Configuring a dedicated system as DNS (CoreDNS)](#configuring-a-dedicated-system-as-dns--coredns-)
+  * [Configuring a dedicated system as DNS (CoreDNS)](#configuring-a-dedicated-system-as-dns--coredns-)
 - [Network Namespaces](#network-namespaces)
-  - [Creating network namespaces](#creating-network-namespaces)
-  - [Exec in network namespaces](#exec-in-network-namespaces)
-  - [Connecting network interfaces](#connecting-network-interfaces)
-  - [How enable multiple namespace to inter-communicate](#how-enable-multiple-namespace-to-inter-communicate)
+  * [Creating network namespaces](#creating-network-namespaces)
+  * [Exec in network namespaces](#exec-in-network-namespaces)
+  * [Connecting network interfaces](#connecting-network-interfaces)
+  * [Enabling multiple namespaces for inter-communication](#enabling-multiple-namespaces-for-inter-communication)
+  * [Enabling communication between host machine and bridge](#enabling-communication-between-host-machine-and-bridge)
+  * [Enabling connection Linux Bridge to external LAN connection (192.168.1.0)](#enabling-connection-linux-bridge-to-external-lan-connection--19216810-)
+  * [Connectivity from network namespaces to internet](#connectivity-from-network-namespaces-to-internet)
+  * [Connectivity from internet to network namespaces](#connectivity-from-internet-to-network-namespaces)
 - [Docker Networking](#docker-networking)
 - [CNI](#cni)
+  * [CNI Directives For Container Runtime](#cni-directives-for-container-runtime)
+  * [CNI Directives for Network Plugins](#cni-directives-for-network-plugins)
 - [Cluster Networking](#cluster-networking)
+- [How to implement the Kubernetes networking model](#how-to-implement-the-kubernetes-networking-model)
 - [Pod Networking](#pod-networking)
 - [CNI in Kubernetes](#cni-in-kubernetes)
-- [CNI Weave](#cni-weave)
+- [CNI Weaveworks](#cni-weaveworks)
 - [IP Address Management - Weave](#ip-address-management---weave)
 - [Service Networking](#service-networking)
 - [DNS in Kubernetes](#dns-in-kubernetes)
@@ -899,7 +906,7 @@ It then executes the script with the `add` parameter alongwith container-name an
 ./net-script.sh add <container> <namespace>
 ```
 
-### CNI in Kubernetes
+## CNI in Kubernetes
 
 As per CNI,
 
@@ -909,7 +916,7 @@ As per CNI,
 - Containe Runtime to invoke Network Plugin (bridge) when container is DELeted.
 - JSON format of the Network Configuration.
 
-### CNI Weaveworks
+## CNI Weaveworks
 
 Weavework run peer to peer setup, where in it places a `Weavework` daemon/service on every running node. The communication inside a node happens between `weavework` daemon and `pods`, but outside the node happens between `weavework` daemons. 
 
@@ -919,19 +926,109 @@ To deploy `weavework` daemons on cluster, we run,
 kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
 ```
 
-To view `weavework` pods, we use `kubectl get pods -n kube-system`
+To view `weavework` pods, we use `kubectl get pods -n kube-system | grep weave`.
 
-```shell
+Inspect the kubelet service and identify the network plugin configured for Kubernetes.
 
+```sh
+ps -aux | grep kubelet | grep --color network-plugin=
 ```
 
-```shell
-
-```
+To check CNI solution applied on the system.
 
 ```shell
-
+ll /opt/cni/bin
 ```
+
+What is the CNI plugin configured to be used on this kubernetes cluster?
+
+```sh
+ls /etc/cni/net.d/
+```
+
+
+
+> Points to keep in mind:
+>
+> If asked to deploy `weavework` on cluster, by default the range of IP addresses and the subnet used by `weavework` is `10.32.0.0/12` and often times it overlaps with the host system IP addresses. For example, on a particular host, the command `ip a | grep eth0` yields the following:
+>
+> ```sh
+> $ ip a | grep eth0
+> 12396: eth0@if12397: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1450 qdisc noqueue state UP group default 
+>     inet 10.40.56.3/24 brd 10.40.56.255 scope global eth0
+> ```
+>
+> If we deploy a weave manifest file directly without changing the default IP addresses it will overlap with the host system IP addresses and as a result, it's weave pods will go into an `Error` or `CrashLoopBackOff`.
+>
+> If we will go more deeper and inspect the logs then we can clearly see the issue
+>
+> ```sh
+> $ kubectl logs -n kube-system weave-net-6mckb -c weave
+> Network 10.32.0.0/12 overlaps with existing route 10.40.56.0/24 on host
+> ```
+>
+> So we need to change the default IP address by adding `&env.IPALLOC_RANGE=10.50.0.0/16` option at the end of the manifest file. It should be look like as follows 
+>
+> ```sh
+> kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')&env.IPALLOC_RANGE=10.50.0.0/16"
+> ```
+>
+
+## IP Address Management - Weave
+
+CNI Plugin Responsibilities:
+
+- Must support arguments ADD/DEL/CHECK
+- Must support parameters container id, network ns, etc.
+- **Must manage IP Address assignment to PODs.**
+- Must return results in a specific format.
+
+But how to manage or get IPs ?
+
+In order to do that, we either use `DHCP` or `host-local`. This can also be changed in the configuration for IPAM plugin.
+
+```shell
+cat /etc/cni/net.d/net-script.conf
+{
+	....
+	"ipam": {
+		"type": "host-local",
+		"subnet": "10.244.0.0/16",
+		"routes": [
+			{
+				"dst" : "0.0.0.0/0"
+			}
+		]
+	}
+	....
+}
+```
+
+Let's see how `weaveworks` does this IP management. `weavework` by default, has IP range `10.32.0.0/12`, implying ranging from IP `10.32.0.1, 10.32.0.2, ........, 10.47.255.254` (~close to a million IPs).
+
+https://www.baeldung.com/cs/get-ip-range-from-subnet-mask
+
+What is the POD IP address range configured by weave?
+
+```shell
+ip addr show <network-bridge-name>
+```
+
+What is the default gateway configured on the PODs scheduled on node01?
+
+*Try scheduling a pod on node01 and check ip route output*
+
+```shell
+kubectl run busybox --image=busybox --command sleep 1000 --dry-run=client -o yaml > pod.yaml 
+# open pod.yaml and add nodeName field under spec section.
+kubectl create -f pod.yaml
+kubectl exec busybox -- sh
+ip r # gives you the default gateway
+```
+
+## Service Networking
+
+complete diagram
 
 ```shell
 
@@ -956,16 +1053,6 @@ To view `weavework` pods, we use `kubectl get pods -n kube-system`
  
 
 
-
-
-
-
-
-## 
-
-## IP Address Management - Weave
-
-## Service Networking
 
 ## DNS in Kubernetes
 
