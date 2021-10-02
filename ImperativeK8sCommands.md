@@ -47,7 +47,7 @@
    kubectl get pods --all-
    ```
 
-9. Get all resources in a namespaceL
+9. Get all resources in a namespace.
 
    ```bash
    kubectl api-resources --verbs=list --namespaced -o name | xargs -n 1 kubectl get --show-kind --ignore-not-found -l <label>=<value> -n <namespace>
@@ -73,5 +73,7 @@
     ls /etc/cni/net.d/
     ```
 
+    
+    
     
 

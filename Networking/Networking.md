@@ -1028,35 +1028,89 @@ ip r # gives you the default gateway
 
 ## Service Networking
 
-complete diagram
+![complete diagram](https://github.com/aditya109/learning-k8s/blob/main/assets/service-networking.svg?raw=true)
 
-```shell
+This is how the pods communicate to each other in a cluster setup.
 
+But how does it work ?
+
+Let's observe a 3-node cluster setup as above.
+
+With each node, we would have an IP and we would be running `kubelet` - which acts as an over-watch to observe the changes happening in the cluster via `kube-apiserver`. 
+
+Every time a pod has to be created on the cluster, the `kubelet` would be creating the pod and invoking CNI plugin to configure networking configurations on the pod.
+Similarly, each node also run `kube-proxy`, which watches changes in the cluster through `kube-apiserver`. Everytime a service is created, it is created as a cluster-wide virtual object, with an assigned IP within a pre-defined range specified under the flag `--service-cluster-ip-range` while `kube-apiserver` installation.
+
+The range can also be found out using :
+
+```sh
+ps aux | grep kube-apiserver | grep --service-cluster-ip-range
+root       16488 17.3  2.0 1105664 326124 ?      Ssl  20:28   0:10 kube-apiserver --advertise-address=192.168.49.2 --allow-privileged=true --authorization-mode=Node,RBAC --client-ca-file=/var/lib/minikube/certs/ca.crt --enable-admission-plugins=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,NodeRestriction,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota --enable-bootstrap-token-auth=true --etcd-cafile=/var/lib/minikube/certs/etcd/ca.crt --etcd-certfile=/var/lib/minikube/certs/apiserver-etcd-client.crt --etcd-keyfile=/var/lib/minikube/certs/apiserver-etcd-client.key --etcd-servers=https://127.0.0.1:2379 --kubelet-client-certificate=/var/lib/minikube/certs/apiserver-kubelet-client.crt --kubelet-client-key=/var/lib/minikube/certs/apiserver-kubelet-client.key --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname --proxy-client-cert-file=/var/lib/minikube/certs/front-proxy-client.crt --proxy-client-key-file=/var/lib/minikube/certs/front-proxy-client.key --requestheader-allowed-names=front-proxy-client --requestheader-client-ca-file=/var/lib/minikube/certs/front-proxy-ca.crt --requestheader-extra-headers-prefix=X-Remote-Extra- --requestheader-group-headers=X-Remote-Group --requestheader-username-headers=X-Remote-User --secure-port=8443 --service-account-issuer=https://kubernetes.default.svc.cluster.local --service-account-key-file=/var/lib/minikube/certs/sa.pub --service-account-signing-key-file=/var/lib/minikube/certs/sa.key --service-cluster-ip-range=10.96.0.0/12 --tls-cert-file=/var/lib/minikube/certs/apiserver.crt --tls-private-key-file=/var/lib/minikube/certs/apiserver.key
 ```
 
-```shell
+As you can see here, it is `10.96.0.0/12`.
 
+What `kube-proxy` does is it gets these service-related IPs, it creates forwarding rules on each node to re-route traffic to required pods.
+
+But how are these rules created ?
+
+`kube-proxy` creates these rules by 3 methods:
+
+1. `ipvs`
+2. `iptables` (default)
+3. `userspace`
+
+> These can be configured by setting `--proxy-made` flag while installing `kube-proxy`.
+>
+> To find the type of proxy mode we can use:
+>
+> ```sh
+> kubectl logs <kube-proxy-pod-name> -n kube-system | grep proxy | grep mode
+> ```
+
+To see the iptable entries, please use:
+
+```shell
+iptables -L -t nat | grep <service_name>
 ```
 
-```shell
+To get the range of IP addresses configured for PODs on this cluster 
 
+```sh
+kubectl logs <weave-pod-name> weave -n kube-system | grep ipalloc-range
 ```
 
-```shell
-
-```
+To get IP range configured for the services with the cluster
 
 ```shell
-
+cat /etc/kubernetes/manifests/kube-apiserver.yaml | grep cluster-ip-range
 ```
-
- 
-
-
 
 ## DNS in Kubernetes
 
+Let's say we have a pod `web` having the IP `10.244.2.5`. We want to access it via `test` pod having IP `10.244.1.5`.
+
+In order to do so, we create a service `web-services` which gets assigned `10.107.37.188` IP. As soon as this  service is created, an entry in Kube DNS is made for this service. Now any pod can reach the service by its name or full name. The entry-table looks something like this:
+
+| Hostname    | Namespace | Type | Root          | IP Address    |
+| ----------- | --------- | ---- | ------------- | ------------- |
+| web-service | apps      | svc  | cluster.local | 10.107.37.188 |
+| 10-244-2-5  | default   | pod  | cluster.local | 10.244.2.5    |
+| 10-244-1-5  | apps      | pod  | cluster.local | 10.244.1.5    |
+
+If `test` and `web` are in same namespace, we can `curl http://web-service`. 
+If `test` and `web` are in different namespace (`web` in `apps` and `test` in `default`), we can `curl http://web-service.apps`.
+
+Finally using fully qualified domain name, we can `curl http://web-service.apps.svc.cluster.local`.
+
+> Records for pods are not created implicitly. 
+> But if enabled, records of pods will be created, though under **Hostname** pods have their dash-replaced IPs displayed instead of their names. 
+
 ## Core DNS in Kubernetes
+
+
+
+
 
 ## Ingress
 
