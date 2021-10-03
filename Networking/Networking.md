@@ -1108,6 +1108,64 @@ Finally using fully qualified domain name, we can `curl http://web-service.apps.
 
 ## Core DNS in Kubernetes
 
+In a Kubernetes cluster, we run an executable `./Coredns` which takes its configuration from `/etc/coredns/Corefile`.
+
+```sh
+.:53 {
+	errors
+	health
+	kubernetes cluster.local in-addr.arpa ip6.arpa {
+		pods insecure
+		upstream
+		fallthrough in-addr.arpa ip6.arpa
+	}
+	prometheus :9153
+	proxy . /etc/resolv.conf
+	cache 30 
+	reload
+}
+```
+
+This is passed a configMap object into CoreDNS pods.
+
+Each time a pod or service is created, the CoreDNS creates an entry for the specified object.
+
+CoreDNS also creates a service tethered to itself.
+
+```sh
+kubectl get service -n kube-system
+NAME       TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)                  AGE
+kube-dns   ClusterIP   10.96.0.10   <none>        53/UDP,53/TCP,9153/TCP   14d
+```
+
+For the pods, they need key-value pair in`/etc/resolv.conf` for DNS resolution. The CoreDNS server `kube-dns` IP is placed as the value for nameserver.
+
+```sh
+cat /etc/resolv.conf
+nameserver 10.96.0.10
+search default.svc.cluster.local svc.cluster.local cluster.local
+```
+
+Also this file has another entry called `search`, which helps the pod resolve the service.
+
+> For pods, you always have to use their fully qualified name.
+
+This is taken care by the `kubelet`, as this value is also placed within `/var/lib/kubelet/config.yaml`.
+
+```sh
+cat /var/lib/kubelet/config.yaml
+...
+clusterDNS:
+- 10.96.0.10
+clusterDomain: cluster.local
+```
+
+
+
+
+
+
+
 
 
 
