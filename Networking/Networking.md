@@ -913,7 +913,7 @@ As per CNI,
 - Container Runtime must create network namespace.
 - Identify network the container must attach to.
 - Container Runtime to invoke Network Plugin (bridge) when container is ADDed.
-- Containe Runtime to invoke Network Plugin (bridge) when container is DELeted.
+- Container Runtime to invoke Network Plugin (bridge) when container is DELeted.
 - JSON format of the Network Configuration.
 
 ## CNI Weaveworks
