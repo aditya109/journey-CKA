@@ -1170,7 +1170,9 @@ clusterDomain: cluster.local
 
 Let's say we are deploying an application on the URL `www.my-online-store.com` . Let's say we dockerized the application, using whose image we create a POD `wear` within a deployment.  Also we deploy a `MySQL` POD and to connect to the `MySQL` POD we create `mysql-service` of type **ClusterIP**. To make the application available to the outside world, we create another service connected to `wear-service` of type **NodePort** available on Port 38080.
 
+![](https://github.com/aditya109/learning-k8s/blob/main/assets/networking-ingress-1.svg?raw=true)
 
+The application will now be visible on `http://<node-ip>:38080`.
 
 
 
