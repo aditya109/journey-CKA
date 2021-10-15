@@ -1172,7 +1172,15 @@ Let's say we are deploying an application on the URL `www.my-online-store.com` .
 
 ![](https://github.com/aditya109/learning-k8s/blob/main/assets/networking-ingress-1.svg?raw=true)
 
-The application will now be visible on `http://<node-ip>:38080`.
+The application will now be visible on `http://<node-ip>:38080`. 
+
+Let's say now we want to scale the application as our customer base is increasing, so we deploy 3 pods in our deployment.
+
+![](https://github.com/aditya109/learning-k8s/blob/main/assets/networking-ingress-2.svg?raw=true)
+
+Now, we don't want the users to type node-IP everytime. So I can configure my DNS to point to the IP of the nodes.
+
+![](https://github.com/aditya109/learning-k8s/blob/main/assets/networking-ingress-3.svg?raw=true)
 
 
 
