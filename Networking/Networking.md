@@ -1181,6 +1181,8 @@ Also, we do not want the users to remember the port as well, so we will bring an
 
 ![](https://github.com/aditya109/learning-k8s/blob/main/assets/networking-ingress-5.svg?raw=true)
 
+This work for on-prem infra setups, but if infra was public cloud like GCP, AWS, etc.
+
 
 
 
