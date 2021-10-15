@@ -1185,7 +1185,10 @@ This work for on-prem infra setups, but if infra was public cloud like GCP, AWS,
 
 ![](https://github.com/aditya109/learning-k8s/blob/main/assets/networking-GCP%20ingress.svg?raw=true)
 
+Now, let's say your company business grows and you now have multiple services for consumer usage, for example,
 
+1. `www.my-online-store.com/wear`
+2. `www.my-online-store.com/watch`
 
 
 
