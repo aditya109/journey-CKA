@@ -1194,11 +1194,13 @@ So now we deploy another deployment with `video` pods, running on below a `video
 
 To re-direct overall traffic we will have to run `another load-balancer`, to re-direct traffic to respective load-balancers for endpoints `/wear` and `/video`.
 
-
+Also, we have to SSL authentication to provide secured `http` URL for our server.
 
 ![](https://github.com/aditya109/learning-k8s/blob/main/assets/networking-GCP%20ingress-2.svg?raw=true)
 
+The problem here is each LoadBalancer service comes with a load-balancer which is very costly. Each time we do this, the cost increases and so does the complexity of our application.
 
+So we use Ingress for these usage.
 
 
 
