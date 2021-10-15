@@ -4,24 +4,24 @@
 
 - [Switching and Routing](#switching-and-routing)
 - [DNS](#dns)
-  * [Record Types](#record-types)
-  * [nslookup](#nslookup)
-  * [dig](#dig)
+  - [Record Types](#record-types)
+  - [nslookup](#nslookup)
+  - [dig](#dig)
 - [CoreDNS](#coredns)
-  * [Configuring a dedicated system as DNS (CoreDNS)](#configuring-a-dedicated-system-as-dns--coredns-)
+  - [Configuring a dedicated system as DNS (CoreDNS)](#configuring-a-dedicated-system-as-dns--coredns-)
 - [Network Namespaces](#network-namespaces)
-  * [Creating network namespaces](#creating-network-namespaces)
-  * [Exec in network namespaces](#exec-in-network-namespaces)
-  * [Connecting network interfaces](#connecting-network-interfaces)
-  * [Enabling multiple namespaces for inter-communication](#enabling-multiple-namespaces-for-inter-communication)
-  * [Enabling communication between host machine and bridge](#enabling-communication-between-host-machine-and-bridge)
-  * [Enabling connection Linux Bridge to external LAN connection (192.168.1.0)](#enabling-connection-linux-bridge-to-external-lan-connection--19216810-)
-  * [Connectivity from network namespaces to internet](#connectivity-from-network-namespaces-to-internet)
-  * [Connectivity from internet to network namespaces](#connectivity-from-internet-to-network-namespaces)
+  - [Creating network namespaces](#creating-network-namespaces)
+  - [Exec in network namespaces](#exec-in-network-namespaces)
+  - [Connecting network interfaces](#connecting-network-interfaces)
+  - [Enabling multiple namespaces for inter-communication](#enabling-multiple-namespaces-for-inter-communication)
+  - [Enabling communication between host machine and bridge](#enabling-communication-between-host-machine-and-bridge)
+  - [Enabling connection Linux Bridge to external LAN connection (192.168.1.0)](#enabling-connection-linux-bridge-to-external-lan-connection--19216810-)
+  - [Connectivity from network namespaces to internet](#connectivity-from-network-namespaces-to-internet)
+  - [Connectivity from internet to network namespaces](#connectivity-from-internet-to-network-namespaces)
 - [Docker Networking](#docker-networking)
 - [CNI](#cni)
-  * [CNI Directives For Container Runtime](#cni-directives-for-container-runtime)
-  * [CNI Directives for Network Plugins](#cni-directives-for-network-plugins)
+  - [CNI Directives For Container Runtime](#cni-directives-for-container-runtime)
+  - [CNI Directives for Network Plugins](#cni-directives-for-network-plugins)
 - [Cluster Networking](#cluster-networking)
 - [How to implement the Kubernetes networking model](#how-to-implement-the-kubernetes-networking-model)
 - [Pod Networking](#pod-networking)
@@ -151,7 +151,7 @@ Consider this setup. What we want to do is instead of its IP, we want to ping ho
 
 ```bash
 cat >> /etc/hosts
-192.168.1.11	db
+192.168.1.11 db
 ```
 
 Now, `/etc/hosts` is the source of truth for host A. Whatever it sees in the `/etc/hosts` file it thinks it is truth and starts sending requests accordingly.
@@ -170,7 +170,7 @@ To add a DNS server to any host, all you need to do is add an entry to the `/etc
 
 ```bash
 cat /etc/resolv.conf
-nameserver 		192.168.1.100
+nameserver   192.168.1.100
 
 ping db
 ```
@@ -181,21 +181,21 @@ But, what if there are 2 similar entries in the DNS server and `/etc/hosts/` fil
 
 ```bash
 # DNS server entries
-139.183.121.188			web
-49.236.74.206			db
-189.197.163.121			nfs
-6.184.138.211			db-1
-4.10.176.191			nfs-3
-237.149.65.17			db-7
-172.159.243.60			web-19
-56.119.78.108			test			👈
-72.149.228.30			nfs-prod
-27.48.22.70				sql
+139.183.121.188   web
+49.236.74.206   db
+189.197.163.121   nfs
+6.184.138.211   db-1
+4.10.176.191   nfs-3
+237.149.65.17   db-7
+172.159.243.60   web-19
+56.119.78.108   test   👈
+72.149.228.30   nfs-prod
+27.48.22.70    sql
 ```
 
 ```bash
 # /etc/hosts
-192.168.1.115			test			👈
+192.168.1.115   test   👈
 ```
 
 Here, first `/etc/hosts` are looked at and then at DNS entries.
@@ -206,16 +206,16 @@ A new entry for Google DNS can be added to the local DNS server.
 
 ```bash
 # DNS server entries
-139.183.121.188			web
-49.236.74.206			db
-189.197.163.121			nfs
-6.184.138.211			db-1
-4.10.176.191			nfs-3
-237.149.65.17			db-7
-172.159.243.60			web-19
-56.119.78.108			test			👈
-72.149.228.30			nfs-prod
-27.48.22.70				sql
+139.183.121.188   web
+49.236.74.206   db
+189.197.163.121   nfs
+6.184.138.211   db-1
+4.10.176.191   nfs-3
+237.149.65.17   db-7
+172.159.243.60   web-19
+56.119.78.108   test   👈
+72.149.228.30   nfs-prod
+27.48.22.70    sql
 
 Forward All to 8.8.8.8
 ```
@@ -224,12 +224,12 @@ Let's say there is an org DNS connected to host-A which has the following record
 
 ```bash
 # DNS server(192.168.1.100) entries
-192.168.1.10 		web.mycompany.com
-192.168.1.11 		db.mycompany.com
-192.168.1.12 		nfs.mycompany.com
-192.168.1.13 		web-1.mycompany.com
-192.168.1.14 		sql.mycompany.com
-192.168.1.15 		hr.mycompany.com
+192.168.1.10   web.mycompany.com
+192.168.1.11   db.mycompany.com
+192.168.1.12   nfs.mycompany.com
+192.168.1.13   web-1.mycompany.com
+192.168.1.14   sql.mycompany.com
+192.168.1.15   hr.mycompany.com
 ```
 
 Now, whenever I hit `web`, it should re-route the traffic to `web.mycompany.com`.
@@ -238,8 +238,8 @@ For that, we need to add an entry to `/etc/resolv.conf`.
 
 ```bash
 cat /etc/resolv.conf
-nameserver			192.168.1.100
-search				mycompany.com
+nameserver   192.168.1.100
+search    mycompany.com
 ```
 
 The search entry here appends `mycompany.com` to all the search entries and then searches it in the DNS.
@@ -248,8 +248,8 @@ Additional, entries in `search` field would mean either of the accumulated entri
 
 ```bash
 cat /etc/resolv.conf
-nameserver			192.168.1.100
-search				mycompany.com prod.mycompany.com
+nameserver   192.168.1.100
+search    mycompany.com prod.mycompany.com
 ```
 
 The searchable entries would be:
@@ -514,7 +514,7 @@ Connect: Network is unreachable
 
 ![](https://github.com/aditya109/learning-k8s/blob/main/assets/external-network-connection-to-namespace.jpg?raw=true)
 
-**Solution: ** We need to ping the external IP `192.168.1.3` via external router `192.168.1.0`.
+**Solution:** We need to ping the external IP `192.168.1.3` via external router `192.168.1.0`.
 
 ```shell
 ip netns exec blue ip router add 192.168.1.0/24 via 192.168.15.5
@@ -633,7 +633,7 @@ ip -n b3165c10a92b addr
 
 Same process is iterated multiple times.
 
-On being connected to bridge network, the container if is hosting a web application, it can be accessed docker on port **80**, but not from the host. 
+On being connected to bridge network, the container if is hosting a web application, it can be accessed docker on port **80**, but not from the host.
 
 For the doing that, we need to publish the ports.
 
@@ -646,18 +646,18 @@ iptables -nvL -t nat
 Chain Docker (2 references)
 ```
 
-| target | prot | opt  | source   | destination |                                |
-| ------ | ---- | ---- | -------- | ----------- | ------------------------------ |
-| RETURN | all  | --   | anywhere | anywhere    |                                |
-| DNAT   | tcp  | --   | anywhere | anywhere    | tcp dpt:8080 to :172.17.0.2:80 |
+| target | prot | opt | source   | destination |                                |
+| ------ | ---- | --- | -------- | ----------- | ------------------------------ |
+| RETURN | all  | --  | anywhere | anywhere    |                                |
+| DNAT   | tcp  | --  | anywhere | anywhere    | tcp dpt:8080 to :172.17.0.2:80 |
 
 ## CNI
 
-***Container Runtime***
+**_Container Runtime_**
 
 1. Create Network Namespaces
 
-***Bridge*** `bridge add <cid> <namespaceid>`
+**_Bridge_** `bridge add <cid> <namespaceid>`
 
 2. Create Bridge Network/Interface
 3. Create VETH Pairs (pipes)
@@ -698,7 +698,7 @@ Also, `weaveworks`, `flannel`, `cilium`, `vmwareNSX`, etc.
 
 There are some pre requisites for the cluster:
 
-1. Each node must have an IP, node-name, and MAC address. 
+1. Each node must have an IP, node-name, and MAC address.
 2. Some ports must be open on the nodes as well.
 
 ![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/assets/mandatory-port-openings-on-node.png)
@@ -709,7 +709,7 @@ There are some pre requisites for the cluster:
 
 | Protocol | Direction | Port Range | Purpose                 | Used by              |
 | -------- | --------- | ---------- | ----------------------- | -------------------- |
-| TCP      | Inbound   | 6443*      | Kubernetes API server   | All                  |
+| TCP      | Inbound   | 6443\*     | Kubernetes API server   | All                  |
 | TCP      | Inbound   | 2379-2380  | etcd server client API  | kube-apiserver, etcd |
 | TCP      | Inbound   | 10250      | Kubelet API             | Self, control plane  |
 | TCP      | Inbound   | 10251      | kube-scheduler          | Self                 |
@@ -717,10 +717,10 @@ There are some pre requisites for the cluster:
 
 **Worker node(s)-**
 
-| Protocol | Direction | Port Range  | Purpose             | Used by             |
-| -------- | --------- | ----------- | ------------------- | ------------------- |
-| TCP      | Inbound   | 10250       | Kubernetes API      | Self, control plane |
-| TCP      | Inbound   | 30000-32767 | NodePort Services** | All                 |
+| Protocol | Direction | Port Range  | Purpose               | Used by             |
+| -------- | --------- | ----------- | --------------------- | ------------------- |
+| TCP      | Inbound   | 10250       | Kubernetes API        | Self, control plane |
+| TCP      | Inbound   | 30000-32767 | NodePort Services\*\* | All                 |
 
 **Handy Commands for debugging networking issues on cluster**
 
@@ -767,7 +767,7 @@ controlplane   Ready    control-plane,master   9m47s   v1.20.0   10.27.140.6   <
 # copy internal ip from there
 
 ip a | grep -B2 10.27.140.6
-7180: eth0@if7181: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1450 qdisc noqueue state UP group default 
+7180: eth0@if7181: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1450 qdisc noqueue state UP group default
     link/ether 02:42:0a:1b:8c:06 brd ff:ff:ff:ff:ff:ff link-netnsid 0
     inet 10.27.140.6/24 brd 10.27.140.255 scope global eth0
 
@@ -786,7 +786,7 @@ Address                  HWtype  HWaddress           Flags Mask            Iface
 
 ```shell
 ip route show default
-default via 172.17.0.1 dev eth1 
+default via 172.17.0.1 dev eth1
 ```
 
 **Notice that ETCD is listening on two ports. Which of these have more client connections established?**
@@ -794,8 +794,6 @@ default via 172.17.0.1 dev eth1
 ```shell
 netstat -anp | grep etcd | grep PORT_NUMBER | wc -l
 ```
-
-
 
 ## How to implement the Kubernetes networking model
 
@@ -811,7 +809,7 @@ Requisites for Networking Model
 
 Example,
 
-Let's say we have 3 nodes: 
+Let's say we have 3 nodes:
 
 1. 192.168.1.11
 2. 192.168.1.12
@@ -822,7 +820,7 @@ These 3 nodes are attached to a LAN at 192.168.1.0
 Now on each node, we create a bridge network
 
 ```shell
-ip link add v-net-0 type bridge 
+ip link add v-net-0 type bridge
 # on all 3 nodes and bring them up
 ip link set dev v-net-0 up
 ```
@@ -858,7 +856,7 @@ ip -n <namespace> link set .....
 
 The same is done for all the nodes, which establishes the communication between pods inside the nodes.
 
-To esatablish communication between pods in node 1 and pods in node 2 is 
+To esatablish communication between pods in node 1 and pods in node 2 is
 
 ```shell
 podOnNode1$ ping 10.244.2.2 #ip of pod on node 2
@@ -869,7 +867,7 @@ podOnNode1$ ping 10.244.2.2 #ip of pod on node 2
 64 bytes from 8.8.8.8: icmp_seq==1 tt=63 time=0.587 ms
 ```
 
-Now, the same is done for all the nodes' containers. This works fine in this simple setup, but would require a lot more configuration in large workload cluster. 
+Now, the same is done for all the nodes' containers. This works fine in this simple setup, but would require a lot more configuration in large workload cluster.
 
 It is usually advised to do the same on a router if the network has any. But the problem remains that the same set of instructions has to be run each time a container is created.
 
@@ -900,7 +898,7 @@ Then, it looks for the script in the similarily specified directory.
 --cni-bin-dir=/etc/cni/bin
 ```
 
-It then executes the script with the `add` parameter alongwith container-name and namespace. 
+It then executes the script with the `add` parameter alongwith container-name and namespace.
 
 ```shell
 ./net-script.sh add <container> <namespace>
@@ -918,7 +916,7 @@ As per CNI,
 
 ## CNI Weaveworks
 
-Weavework run peer to peer setup, where in it places a `Weavework` daemon/service on every running node. The communication inside a node happens between `weavework` daemon and `pods`, but outside the node happens between `weavework` daemons. 
+Weavework run peer to peer setup, where in it places a `Weavework` daemon/service on every running node. The communication inside a node happens between `weavework` daemon and `pods`, but outside the node happens between `weavework` daemons.
 
 To deploy `weavework` daemons on cluster, we run,
 
@@ -946,15 +944,13 @@ What is the CNI plugin configured to be used on this kubernetes cluster?
 ls /etc/cni/net.d/
 ```
 
-
-
 > Points to keep in mind:
 >
 > If asked to deploy `weavework` on cluster, by default the range of IP addresses and the subnet used by `weavework` is `10.32.0.0/12` and often times it overlaps with the host system IP addresses. For example, on a particular host, the command `ip a | grep eth0` yields the following:
 >
 > ```sh
 > $ ip a | grep eth0
-> 12396: eth0@if12397: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1450 qdisc noqueue state UP group default 
+> 12396: eth0@if12397: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1450 qdisc noqueue state UP group default
 >     inet 10.40.56.3/24 brd 10.40.56.255 scope global eth0
 > ```
 >
@@ -967,12 +963,11 @@ ls /etc/cni/net.d/
 > Network 10.32.0.0/12 overlaps with existing route 10.40.56.0/24 on host
 > ```
 >
-> So we need to change the default IP address by adding `&env.IPALLOC_RANGE=10.50.0.0/16` option at the end of the manifest file. It should be look like as follows 
+> So we need to change the default IP address by adding `&env.IPALLOC_RANGE=10.50.0.0/16` option at the end of the manifest file. It should be look like as follows
 >
 > ```sh
 > kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')&env.IPALLOC_RANGE=10.50.0.0/16"
 > ```
->
 
 ## IP Address Management - Weave
 
@@ -990,23 +985,23 @@ In order to do that, we either use `DHCP` or `host-local`. This can also be chan
 ```shell
 cat /etc/cni/net.d/net-script.conf
 {
-	....
-	"ipam": {
-		"type": "host-local",
-		"subnet": "10.244.0.0/16",
-		"routes": [
-			{
-				"dst" : "0.0.0.0/0"
-			}
-		]
-	}
-	....
+ ....
+ "ipam": {
+  "type": "host-local",
+  "subnet": "10.244.0.0/16",
+  "routes": [
+   {
+    "dst" : "0.0.0.0/0"
+   }
+  ]
+ }
+ ....
 }
 ```
 
 Let's see how `weaveworks` does this IP management. `weavework` by default, has IP range `10.32.0.0/12`, implying ranging from IP `10.32.0.1, 10.32.0.2, ........, 10.47.255.254` (~close to a million IPs).
 
-https://www.baeldung.com/cs/get-ip-range-from-subnet-mask
+<https://www.baeldung.com/cs/get-ip-range-from-subnet-mask>
 
 What is the POD IP address range configured by weave?
 
@@ -1016,10 +1011,10 @@ ip addr show <network-bridge-name>
 
 What is the default gateway configured on the PODs scheduled on node01?
 
-*Try scheduling a pod on node01 and check ip route output*
+_Try scheduling a pod on node01 and check ip route output_
 
 ```shell
-kubectl run busybox --image=busybox --command sleep 1000 --dry-run=client -o yaml > pod.yaml 
+kubectl run busybox --image=busybox --command sleep 1000 --dry-run=client -o yaml > pod.yaml
 # open pod.yaml and add nodeName field under spec section.
 kubectl create -f pod.yaml
 kubectl exec busybox -- sh
@@ -1036,7 +1031,7 @@ But how does it work ?
 
 Let's observe a 3-node cluster setup as above.
 
-With each node, we would have an IP and we would be running `kubelet` - which acts as an over-watch to observe the changes happening in the cluster via `kube-apiserver`. 
+With each node, we would have an IP and we would be running `kubelet` - which acts as an over-watch to observe the changes happening in the cluster via `kube-apiserver`.
 
 Every time a pod has to be created on the cluster, the `kubelet` would be creating the pod and invoking CNI plugin to configure networking configurations on the pod.
 Similarly, each node also run `kube-proxy`, which watches changes in the cluster through `kube-apiserver`. Everytime a service is created, it is created as a cluster-wide virtual object, with an assigned IP within a pre-defined range specified under the flag `--service-cluster-ip-range` while `kube-apiserver` installation.
@@ -1074,7 +1069,7 @@ To see the iptable entries, please use:
 iptables -L -t nat | grep <service_name>
 ```
 
-To get the range of IP addresses configured for PODs on this cluster 
+To get the range of IP addresses configured for PODs on this cluster
 
 ```sh
 kubectl logs <weave-pod-name> weave -n kube-system | grep ipalloc-range
@@ -1090,7 +1085,7 @@ cat /etc/kubernetes/manifests/kube-apiserver.yaml | grep cluster-ip-range
 
 Let's say we have a pod `web` having the IP `10.244.2.5`. We want to access it via `test` pod having IP `10.244.1.5`.
 
-In order to do so, we create a service `web-services` which gets assigned `10.107.37.188` IP. As soon as this  service is created, an entry in Kube DNS is made for this service. Now any pod can reach the service by its name or full name. The entry-table looks something like this:
+In order to do so, we create a service `web-services` which gets assigned `10.107.37.188` IP. As soon as this service is created, an entry in Kube DNS is made for this service. Now any pod can reach the service by its name or full name. The entry-table looks something like this:
 
 | Hostname    | Namespace | Type | Root          | IP Address    |
 | ----------- | --------- | ---- | ------------- | ------------- |
@@ -1098,13 +1093,13 @@ In order to do so, we create a service `web-services` which gets assigned `10.10
 | 10-244-2-5  | default   | pod  | cluster.local | 10.244.2.5    |
 | 10-244-1-5  | apps      | pod  | cluster.local | 10.244.1.5    |
 
-If `test` and `web` are in same namespace, we can `curl http://web-service`. 
+If `test` and `web` are in same namespace, we can `curl http://web-service`.
 If `test` and `web` are in different namespace (`web` in `apps` and `test` in `default`), we can `curl http://web-service.apps`.
 
 Finally using fully qualified domain name, we can `curl http://web-service.apps.svc.cluster.local`.
 
-> Records for pods are not created implicitly. 
-> But if enabled, records of pods will be created, though under **Hostname** pods have their dash-replaced IPs displayed instead of their names. 
+> Records for pods are not created implicitly.
+> But if enabled, records of pods will be created, though under **Hostname** pods have their dash-replaced IPs displayed instead of their names.
 
 ## Core DNS in Kubernetes
 
@@ -1112,17 +1107,17 @@ In a Kubernetes cluster, we run an executable `./Coredns` which takes its config
 
 ```sh
 .:53 {
-	errors
-	health
-	kubernetes cluster.local in-addr.arpa ip6.arpa {
-		pods insecure
-		upstream
-		fallthrough in-addr.arpa ip6.arpa
-	}
-	prometheus :9153
-	proxy . /etc/resolv.conf
-	cache 30 
-	reload
+ errors
+ health
+ kubernetes cluster.local in-addr.arpa ip6.arpa {
+  pods insecure
+  upstream
+  fallthrough in-addr.arpa ip6.arpa
+ }
+ prometheus :9153
+ proxy . /etc/resolv.conf
+ cache 30
+ reload
 }
 ```
 
@@ -1168,11 +1163,11 @@ clusterDomain: cluster.local
 
 ## Ingress
 
-Let's say we are deploying an application on the URL `www.my-online-store.com` . Let's say we dockerized the application, using whose image we create a POD `wear` within a deployment.  Also we deploy a `MySQL` POD and to connect to the `MySQL` POD we create `mysql-service` of type **ClusterIP**. To make the application available to the outside world, we create another service connected to `wear-service` of type **NodePort** available on Port 38080.
+Let's say we are deploying an application on the URL `www.my-online-store.com` . Let's say we dockerized the application, using whose image we create a POD `wear` within a deployment. Also we deploy a `MySQL` POD and to connect to the `MySQL` POD we create `mysql-service` of type **ClusterIP**. To make the application available to the outside world, we create another service connected to `wear-service` of type **NodePort** available on Port 38080.
 
 ![](https://github.com/aditya109/learning-k8s/blob/main/assets/networking-ingress-1.svg?raw=true)
 
-The application will now be visible on `http://<node-ip>:38080`. 
+The application will now be visible on `http://<node-ip>:38080`.
 
 Let's say now we want to scale the application as our customer base is increasing, so we deploy 3 pods in our deployment.
 
@@ -1182,9 +1177,9 @@ Now, we don't want the users to type node-IP everytime. So I can configure my DN
 
 ![](https://github.com/aditya109/learning-k8s/blob/main/assets/networking-ingress-3.svg?raw=true)
 
+Also, we do not want the users to remember the port as well, so we will bring an additional layer of `proxy-server` running on port 80 to redirect its traffic to respective port 38080.
 
-
-
+![](https://github.com/aditya109/learning-k8s/blob/main/assets/networking-ingress-4.svg?raw=true)
 
 
 
