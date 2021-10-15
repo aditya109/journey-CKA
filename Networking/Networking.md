@@ -1202,16 +1202,292 @@ The problem here is each LoadBalancer service comes with a load-balancer which i
 
 So we use Ingress for these usage.
 
-![](https://github.com/aditya109/learning-k8s/blob/main/assets/networking-GCP%20ingress-.svg?raw=true)
+![](https://github.com/aditya109/learning-k8s/blob/main/assets/networking-GCP%20Ingress%20-%204.svg?raw=true)
 
+### Defining Ingress
 
+Ingress consists of 2 components:
 
+1. Ingress Controller - It contains the supported solution which would be used to define ingress controls.
+   For which, we need :
 
+   - a `Deployment`
+   - a `Service` - to expose the above deployment
+   - a `ConfigMap` - to provide configuration
+   - a `ServiceAccount`- to provide authentication 
 
+   ```yaml
+   apiVersion: extensions/v1beta1
+   kind: Deployment
+   metadata:
+     name: nginx-ingress-controller
+   spec:
+     replicas: 1
+     selector:
+       matchLabels:
+         app: nginx-ingress
+     template:
+       metadata:
+         labels:
+           app: nginx-ingress
+       spec:
+         containers:
+         - name: nginx-ingress-controller
+           image: quay.io/kubernetes-ingress-controller/nginx-ingress-controller:0.21.0
+           resources:
+             limits:
+               memory: "128Mi"
+               cpu: "500m"
+           args:
+             - /nginx-ingress-controller
+             - --configmap=$(POD_NAMESPACE)/nginx-configuration
+           env:
+             - name: POD_NAME
+               valueFrom:
+                 fieldRef:
+                   fieldPath: metadata.name
+             - name: POD_NAMESPACE
+               valueFrom:
+                 fieldRef:
+                   fieldPath: metadata.namespace
+           ports:
+             - name: http
+               containerPort: 80
+             - name: https
+               containerPort: 443
+   ```
 
+   The nginx also has various configurations which it requires to run:
 
+   - `err-log-path`
+   - `keep-alive`
+   - `ssl-protocols`
 
+   These must be passed as `ConfigMap` object and passes to the `nginx-ingress-controller`.
 
+   ```yaml
+   apiVersion: v1
+   kind: ConfigMap
+   metadata:
+     name: nginx-configuation
+   ```
 
+   Also, we would need a service `nginx-ingress` to run on top of `nginx-ingress-controller`.
+
+   ```yaml
+   apiVersion: v1
+   kind: Service
+   metadata:
+     name: nginx-ingress
+   spec:
+     type: NodePort
+     selector:
+       app: nginx-ingress
+     ports:
+     - port: 80
+       targetPort: 80
+       protocol: TCP
+       name: http
+     - port: 443
+       targetPort: 443
+       protocol: TCP
+       name: https
+   ```
+
+   Also, we need a service-acccount with right set of permissions- `roles`, `clusterRoles` and `role-bindings`.
+
+   ```yaml
+   apiVersion: v1
+   kind: ServiceAccount
+   metadata:
+     name: nginx-ingress-serviceaccount
+   ```
+
+2. Ingress Resources - It contains the set of rules to be used by the controller.
+
+   > ```yaml
+   > apiVersion: extensions/v1beta1
+   > kind: Ingress
+   > metadata:
+   >   name: ingress-wear
+   > spec:
+   >   backend:
+   >     serviceName: wear-service 
+   >     servicePort: 80
+   > ```
+   >
+   > To create an ingress-resource from manifest file, we use:
+   >
+   > ```sh
+   > kubectl create -f ingress-resources-scenario-1.yaml
+   > ```
+   >
+   > To view all ingress-resources, we use:
+   >
+   > ```sh
+   > kubectl get ingress
+   > ```
+
+   Here, rules of routing traffic are written. There are two ways of doing routing:
+
+   - **Scenario 1 (1 Rule, 2 Paths)**: We have one root URL `www.my-online-store.com`.
+     But two endpoints to route traffic :
+
+     - `www.my-online-store.com/wear` - to route traffic to `wear` pods.
+     - `www.my-online-store.com/watch` - to route traffic to `video` pods.
+
+     Ingress Resources manifest for this scenario:
+
+     ```yaml
+     apiVersion: networking.k8s.io/v1
+     kind: Ingress
+     metadata:
+       name: ingress-resource-1
+       labels:
+         name: ingress-resource
+     spec:
+       rules:
+       - http:
+           paths:
+           - pathType: Prefix
+             path: "/wear"
+             backend:
+               service:
+                 name: wear-service
+                 port: 
+                   number: 80
+           - pathType: Prefix
+             path: "/watch"
+             backend:
+               service:
+                 name: watch-service
+                 port: 
+                   number: 80
+     ```
+
+     `kubectl describe ingress ingress--resource` gives:
+
+     ```yaml
+     >: kubectl describe ingress
+     Name:             ingress-resource-1
+     Namespace:        default
+     Address:          
+     Default backend:  default-http-backend:80 (<error: endpoints "default-http-backend" not found>)
+     Rules:
+       Host        Path  Backends
+       ----        ----  --------
+       *           
+                   /wear    wear-service:80 (<error: endpoints "wear-service" not found>)
+                   /watch   watch-service:80 (<error: endpoints "watch-service" not found>)
+     Annotations:  <none>
+     Events:       <none>
+     
+     ```
+
+     > `default-http-backend:80` means all the default endpoint for all the other request endpoints except the ones defined within the `spec` section. 
+
+   - **Scenario 2 (2 Rules, 1 Path)**: We have two root URLs to route traffic :
+
+     - `wear.my-online-store.com` - to route traffic to `wear` pods.
+     - `watch.my-online-store.com` - to route traffic to `video` pods.
+
+     ```yaml
+     >: kubectl describe ingress ingress-resource-2
+     Name:             ingress-resource-2
+     Namespace:        default
+     Address:          
+     Default backend:  default-http-backend:80 (<error: endpoints "default-http-backend" not found>)
+     Rules:
+       Host                       Path  Backends
+       ----                       ----  --------
+       wear.my-online-store.com   
+                                  /wear   wear-service:80 (<error: endpoints "wear-service" not found>)
+       watch.my-online-store.com  
+                                  /watch   watch-service:80 (<error: endpoints "watch-service" not found>)
+     Annotations:                 <none>
+     Events:                      <none>
+     ```
+
+Imperative commands:
+
+```sh
+kubectl create ingress ingress-test --rule="wear.my-online-store.com/wear*=wear-service:80"
+```
 
 ## Ingress - Annotations and rewrite-target
+
+Different ingress controllers have different options that can be used to customise the way it works.
+
+Reference link: https://kubernetes.github.io/ingress-nginx/examples/
+
+Our `watch` app displays the video streaming webpage at `http://<watch-service>:<port>/`
+
+Our `wear` app displays the apparel webpage at `http://<wear-service>:<port>/`
+
+We must configure Ingress to achieve the below. When user visits the URL on the left, his request should be forwarded internally to the URL on the right. Note that the /watch and /wear URL path are what we configure on the ingress controller so we can forwarded users to the appropriate application in the backend. The applications don't have this URL/Path configured on them:
+
+```sh
+http://<ingress-service>:<ingress-port>/watch --> http://<watch-service>:<port>/
+http://<ingress-service>:<ingress-port>/wear --> http://<wear-service>:<port>/
+```
+
+Without the `rewrite-target` option, this is what would happen:
+
+```
+http://<ingress-service>:<ingress-port>/watch --> http://<watch-service>:<port>/watch
+http://<ingress-service>:<ingress-port>/wear --> http://<wear-service>:<port>/wear
+```
+
+Notice `watch` and `wear` at the end of the target URLs. The target applications are not configured with `/watch` or `/wear` paths. They are different applications built specifically for their purpose, so they don't expect `/watch` or `/wear` in the URLs. And as such the requests would fail and throw a `404` not found error.
+
+To fix that we want to "ReWrite" the URL when the request is passed on to the watch or wear applications. We don't want to pass in the same path that user typed in. So we specify the `rewrite-target` option. This rewrites the URL by replacing whatever is under `rules->http->paths->path` which happens to be `/pay` in this case with the value in `rewrite-target`. This works just like a search and replace function.
+
+For example: `replace(path, rewrite-target)`
+In our case: `replace("/path","/")`
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: test-ingress
+  namespace: critical-space
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - http:
+      paths:
+      - path: "/pay"
+        backend:
+          service:
+            name: pay-service
+            port: 
+              number: 8282
+```
+
+
+
+In another example given [here](https://kubernetes.github.io/ingress-nginx/examples/rewrite/), this could also be:
+
+`replace("/something(/|$)(.*)", "/$2")`
+
+```yaml
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+  name: rewrite
+  namespace: default
+spec:
+  rules:
+  - host: rewrite.bar.com
+    http:
+      paths:
+      - backend:
+      		service:
+              name: pay-service
+              port: 
+              	number: 8282
+        path: /something(/|$)(.*)
+```
