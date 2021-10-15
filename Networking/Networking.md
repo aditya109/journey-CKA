@@ -1190,6 +1190,14 @@ Now, let's say your company business grows and you now have multiple services fo
 1. `www.my-online-store.com/wear`
 2. `www.my-online-store.com/watch`
 
+So now we deploy another deployment with `video` pods, running on below a `video-service` LoadBalancer-type service, which is going to deploy another `gcp load-balancer-2` to redirect its traffic to  port 38282. 
+
+To re-direct overall traffic we will have to run `another load-balancer`, to re-direct traffic to respective load-balancers for endpoints `/wear` and `/video`.
+
+
+
+![](https://github.com/aditya109/learning-k8s/blob/main/assets/networking-GCP%20ingress-2.svg?raw=true)
+
 
 
 
