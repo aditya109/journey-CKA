@@ -1,4 +1,5 @@
 # Imperative Commands
+[https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#-em-ingress-em-](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#-em-ingress-em-)
 
 1. Exec into pod container:
 
