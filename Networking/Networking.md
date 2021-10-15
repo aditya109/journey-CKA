@@ -1183,7 +1183,7 @@ Also, we do not want the users to remember the port as well, so we will bring an
 
 This work for on-prem infra setups, but if infra was public cloud like GCP, AWS, etc.
 
-
+![](https://github.com/aditya109/learning-k8s/blob/main/assets/networking-GCP%20ingress.svg?raw=true)
 
 
 
