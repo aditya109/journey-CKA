@@ -1179,7 +1179,7 @@ Now, we don't want the users to type node-IP everytime. So I can configure my DN
 
 Also, we do not want the users to remember the port as well, so we will bring an additional layer of `proxy-server` running on port 80 to redirect its traffic to respective port 38080.
 
-![](https://github.com/aditya109/learning-k8s/blob/main/assets/networking-ingress-4.svg?raw=true)
+![](https://github.com/aditya109/learning-k8s/blob/main/assets/networking-ingress-5.svg?raw=true)
 
 
 
