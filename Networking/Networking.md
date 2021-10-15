@@ -1202,6 +1202,8 @@ The problem here is each LoadBalancer service comes with a load-balancer which i
 
 So we use Ingress for these usage.
 
+![](https://github.com/aditya109/learning-k8s/blob/main/assets/networking-GCP%20ingress-.svg?raw=true)
+
 
 
 
