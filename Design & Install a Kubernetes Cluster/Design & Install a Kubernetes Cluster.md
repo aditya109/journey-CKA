@@ -14,7 +14,7 @@ Ask before starting:
   - Hosting Production Applications
     - High available multi-node cluster with multiple master nodes
     - `kubeadm`/`GCP`/`KOPS`/`AWS` or other supported platforms
-- Cloud or OnPrem
+- Cloud or On Prem
   - Use `kubeadm` for on-prem
   - GKE for GCP
   - AKS for Azure
@@ -78,9 +78,17 @@ Not all replicas are responsible for writing data, 1 of the instances is chosen 
 
 ETCD leader election protocol is called RAFT. Random timers are initiated on all 3 replicas of ETCD.
 
+![](https://github.com/aditya109/learning-k8s/blob/main/assets/etcd-1.svg?raw=true)
+
+Which ever instance times out first, send the request to the other two instances for assuming leader role.
+
+![](https://github.com/aditya109/learning-k8s/blob/main/assets/etcd-2.svg?raw=true)
+
+When the requests are approved, the requesting instance assumes as the leader.
+
+ 
 
 
-Which ever instance times out first, 
 
 #### How are writes propagated ?
 
