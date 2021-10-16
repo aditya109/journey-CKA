@@ -76,7 +76,11 @@ Not all replicas are responsible for writing data, 1 of the instances is chosen 
 
 #### How is leader elected ?
 
-ETCD leader election protocol is called RAFT. A random timer is initiated on all 3 replicas 
+ETCD leader election protocol is called RAFT. Random timers are initiated on all 3 replicas of ETCD.
+
+
+
+Which ever instance times out first, 
 
 #### How are writes propagated ?
 
