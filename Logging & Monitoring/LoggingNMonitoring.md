@@ -99,7 +99,6 @@ Here, we need to specify the corresponding container-name and the relevant conta
 kubectl logs -f event-simulator-pod event-simulator
 ```
 
-
-
+[Back to Contents ⬆](#Contents)
 
 

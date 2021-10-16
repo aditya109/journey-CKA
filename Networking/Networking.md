@@ -4,24 +4,24 @@
 
 - [Switching and Routing](#switching-and-routing)
 - [DNS](#dns)
-  - [Record Types](#record-types)
-  - [nslookup](#nslookup)
-  - [dig](#dig)
+  * [Record Types](#record-types)
+  * [nslookup](#nslookup)
+  * [dig](#dig)
 - [CoreDNS](#coredns)
-  - [Configuring a dedicated system as DNS (CoreDNS)](#configuring-a-dedicated-system-as-dns--coredns-)
+  * [Configuring a dedicated system as DNS - CoreDNS](#configuring-a-dedicated-system-as-dns---coredns)
 - [Network Namespaces](#network-namespaces)
-  - [Creating network namespaces](#creating-network-namespaces)
-  - [Exec in network namespaces](#exec-in-network-namespaces)
-  - [Connecting network interfaces](#connecting-network-interfaces)
-  - [Enabling multiple namespaces for inter-communication](#enabling-multiple-namespaces-for-inter-communication)
-  - [Enabling communication between host machine and bridge](#enabling-communication-between-host-machine-and-bridge)
-  - [Enabling connection Linux Bridge to external LAN connection (192.168.1.0)](#enabling-connection-linux-bridge-to-external-lan-connection--19216810-)
-  - [Connectivity from network namespaces to internet](#connectivity-from-network-namespaces-to-internet)
-  - [Connectivity from internet to network namespaces](#connectivity-from-internet-to-network-namespaces)
+  * [Creating network namespaces](#creating-network-namespaces)
+  * [Exec in network namespaces](#exec-in-network-namespaces)
+  * [Connecting network interfaces](#connecting-network-interfaces)
+  * [Enabling multiple namespaces for inter-communication](#enabling-multiple-namespaces-for-inter-communication)
+  * [Enabling communication between host machine and bridge](#enabling-communication-between-host-machine-and-bridge)
+  * [Enabling connection Linux Bridge to external LAN connection - 192.168.1.0](#enabling-connection-linux-bridge-to-external-lan-connection---19216810)
+  * [Connectivity from network namespaces to internet](#connectivity-from-network-namespaces-to-internet)
+  * [Connectivity from internet to network namespaces](#connectivity-from-internet-to-network-namespaces)
 - [Docker Networking](#docker-networking)
 - [CNI](#cni)
-  - [CNI Directives For Container Runtime](#cni-directives-for-container-runtime)
-  - [CNI Directives for Network Plugins](#cni-directives-for-network-plugins)
+  * [CNI Directives For Container Runtime](#cni-directives-for-container-runtime)
+  * [CNI Directives for Network Plugins](#cni-directives-for-network-plugins)
 - [Cluster Networking](#cluster-networking)
 - [How to implement the Kubernetes networking model](#how-to-implement-the-kubernetes-networking-model)
 - [Pod Networking](#pod-networking)
@@ -32,6 +32,7 @@
 - [DNS in Kubernetes](#dns-in-kubernetes)
 - [Core DNS in Kubernetes](#core-dns-in-kubernetes)
 - [Ingress](#ingress)
+  * [Defining Ingress](#defining-ingress)
 - [Ingress - Annotations and rewrite-target](#ingress---annotations-and-rewrite-target)
 
 <small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
@@ -293,7 +294,7 @@ dig www.google.com
 
 ## CoreDNS
 
-### Configuring a dedicated system as DNS (CoreDNS)
+### Configuring a dedicated system as DNS - CoreDNS
 
 1. Download the binary using curl or wget. And extract it. You get the coreDNS executable.
 
@@ -498,7 +499,7 @@ Ping `192.168.15.5` from hostname.
 ping 192.168.15.5
 ```
 
-### Enabling connection Linux Bridge to external LAN connection (192.168.1.0)
+### Enabling connection Linux Bridge to external LAN connection - 192.168.1.0
 
 If we directly try to ping this external IP `192.168.1.3` (which connected to external router `192.168.1.0`)from `blue` namespace, let's see what happens.
 
@@ -1294,7 +1295,7 @@ Ingress consists of 2 components:
        name: https
    ```
 
-   Also, we need a service-acccount with right set of permissions- `roles`, `clusterRoles` and `role-bindings`.
+   Also, we need a service-account with right set of permissions- `roles`, `clusterRoles` and `role-bindings`.
 
    ```yaml
    apiVersion: v1
@@ -1416,7 +1417,7 @@ kubectl create ingress ingress-test --rule="wear.my-online-store.com/wear*=wear-
 
 ## Ingress - Annotations and rewrite-target
 
-Different ingress controllers have different options that can be used to customise the way it works.
+Different ingress controllers have different options that can be used to customize the way it works.
 
 Reference link: https://kubernetes.github.io/ingress-nginx/examples/
 
@@ -1440,7 +1441,7 @@ http://<ingress-service>:<ingress-port>/wear --> http://<wear-service>:<port>/we
 
 Notice `watch` and `wear` at the end of the target URLs. The target applications are not configured with `/watch` or `/wear` paths. They are different applications built specifically for their purpose, so they don't expect `/watch` or `/wear` in the URLs. And as such the requests would fail and throw a `404` not found error.
 
-To fix that we want to "ReWrite" the URL when the request is passed on to the watch or wear applications. We don't want to pass in the same path that user typed in. So we specify the `rewrite-target` option. This rewrites the URL by replacing whatever is under `rules->http->paths->path` which happens to be `/pay` in this case with the value in `rewrite-target`. This works just like a search and replace function.
+To fix that we want to `ReWrite` the URL when the request is passed on to the watch or wear applications. We don't want to pass in the same path that user typed in. So we specify the `rewrite-target` option. This rewrites the URL by replacing whatever is under `rules->http->paths->path` which happens to be `/pay` in this case with the value in `rewrite-target`. This works just like a search and replace function.
 
 For example: `replace(path, rewrite-target)`
 In our case: `replace("/path","/")`
@@ -1491,3 +1492,4 @@ spec:
               	number: 8282
         path: /something(/|$)(.*)
 ```
+[Back to Contents ⬆](#Contents)
