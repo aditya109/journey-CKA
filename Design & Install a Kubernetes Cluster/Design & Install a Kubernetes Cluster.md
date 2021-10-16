@@ -107,7 +107,20 @@ When the failing replica comes online, the data is replicated on that as well.
 Majority/Quorum = floor(N/2 + 1); N = total number of nodes in the cluster
 ```
 
+| Instances N                                                  | Quorum Q | Fault Tolerance *f=N-Q* |
+| ------------------------------------------------------------ | -------- | ----------------------- |
+| 1                                                            | 1        | 0                       |
+| 2                                                            | 2        | 0                       |
+| [👉](https://emojipedia.org/backhand-index-pointing-right/) 3 | 2        | 1                       |
+| 4                                                            | 3        | 1                       |
+| [👉](https://emojipedia.org/backhand-index-pointing-right/) 5 | 3        | 2                       |
+| 6                                                            | 4        | 2                       |
+| [👉](https://emojipedia.org/backhand-index-pointing-right/) 7 | 4        | 3                       |
+|                                                              |          |                         |
 
+> Always select odd pair of cluster installation, as in case of network partition, fault tolerance always persists. 
+
+[Back to Contents ⬆](#Contents)
 
 
 
