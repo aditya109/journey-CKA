@@ -35,6 +35,53 @@
 
 ## Control Plan Failure
 
+1. Check Node status.
+
+   ```sh
+   kubectl get nodes
+   ```
+
+2. Check status of pods.
+
+   ```sh
+   kubectl get pods
+   ```
+
+3. Check controlplane pods.
+
+   ```sh
+   kubectl get pods -n kube-system
+   ```
+
+   If deployed as services, check the status of the services.
+
+   ```sh
+   service kube-apiserver status
+   service kube-controller-manager status
+   service kube-scheduler status
+   ```
+
+   On the worker nodes,
+
+   ```sh
+   service kubelet status
+   service kube-proxy status
+   ```
+
+4. Check logs of the controlplane components.
+
+   ```sh
+   kubectl logs kube-apiserver-master -n kube-system
+   ```
+
+   We can also use `journalctl` utility.
+
+   ```sh
+   sudo journalctl -u kube-apiserver
+   ```
+
+   
+
 ## Worker Node Failure
 
 ## Networking Failure
