@@ -1,41 +1,6 @@
 # Table of Contents
 
-- [Core Concepts](#core-concepts)
-  * [Kubernetes Architecture](#kubernetes-architecture)
-  * [ETCD](#etcd)
-      - [Install ETCD](#install-etcd)
-      - [Operate ETCD](#operate-etcd)
-      - [ETCD Cluster](#etcd-cluster)
-  * [Kube-API Server](#kube-api-server)
-  * [Controller Manager](#controller-manager)
-      - [View kube-controller-manager – kubeadm](#view-kube-controller-manager---kubeadm)
-  * [Kube Scheduler](#kube-scheduler)
-      - [View kube-scheduler – kubeadm](#view-kube-scheduler---kubeadm)
-  * [Kubelet](#kubelet)
-  * [Kube Proxy](#kube-proxy)
-    + [PODs](#pods)
-      - [Using PODs](#using-pods)
-      - [Pod Definition YAML](#pod-definition-yaml)
-    + [ReplicaSets](#replicasets)
-      - [Labels and Selectors](#labels-and-selectors)
-      - [Scaling Replicas](#scaling-replicas)
-    + [Deployments](#deployments)
-    + [Namespaces](#namespaces)
-      - [Resource Quota](#resource-quota)
-    + [Services](#services)
-      - [Service Types:](#service-types-)
-      - [Services NodePort](#services-nodeport)
-      - [Services ClusterIP](#services-clusterip)
-      - [Services LoadBalancer](#services-loadbalancer)
-    + [Kubernetes Imperative and Declarative](#kubernetes-imperative-and-declarative)
-      - [Imperative Commands](#imperative-commands)
-        * [Create objects](#create-objects)
-        * [Update Objects](#update-objects)
-      - [Declarative Commands](#declarative-commands)
-
-<small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
-
- 
+-  
 
 # Core Concepts
 
@@ -211,8 +176,8 @@ These controllers include:
 
 `kubectl get pods -n kube-system`
 
-
- To view the manifest of kube-controller-manager (kubeadm setup): cat /etc/kubernetes/manifests/kube-controller-manager.yaml
+ To view the manifest of kube-controller-manager (kubeadm setup): 
+`cat /etc/kubernetes/manifests/kube-controller-manager.yaml`
 
 To view options of kube-controller-manager (non-kubeadm setup):  
 
@@ -248,14 +213,14 @@ Factors considered for scheduling decisions include:
 
 `kubectl get pods -n kube-system`
 
-
- To view the manifest of kube-scheduler (kubeadm setup): cat /etc/kubernetes/manifests/kube- scheduler.yaml
+To view the manifest of kube-scheduler (kubeadm setup): 
+`cat /etc/kubernetes/manifests/kube-scheduler.yaml`
 
 To view options of kube-scheduler (non-kubeadm setup): 
 
 ```powershell
-cat /etc/system/system/kube- scheduler.service
-ps -aux | grep kube- scheduler
+cat /etc/system/system/kube-scheduler.service
+ps -aux | grep kube-scheduler
 ```
 
 ## Kubelet
