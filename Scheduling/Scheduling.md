@@ -162,15 +162,6 @@ spec: # specification about Kubernetes object `kind`
       operator: "Equal"
       value: "blue"					👈
       effect: "NoSchedule" 			👈
-  affinity:
-    nodeAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        nodeSelectorTerms:
-        - matchExpressions:
-          - key: size
-            operator: In
-            values:
-            - Large
   resources:
     requests:
       memory: "1Gi"
@@ -204,8 +195,10 @@ In particular,
 **Removing Tolerations – Pods:**
 
 ```powershell
-kubectl taint nodes master/controlplane node-role.kubernetes.io/master:NoSchedule
+kubectl taint nodes master/controlplane node-role.kubernetes.io/master:NoSchedule-
 ```
+
+> Adding the minus sign at the end untaints the node.
 
 ## Node Selectors
 
@@ -419,7 +412,7 @@ spec:
 
 ##### Edit a POD
 
-We cannot edit specifications of an existing POD other than the below.
+We can only edit specifications of an existing POD listed below.
 
 1. `spec.containers[*].image`
 
@@ -527,7 +520,13 @@ spec:
           protocol: TCP
 ```
 
-3. Configure your kubelet on the node to use this directory by running it **with --pod-manifest-path=/etc/kubelet.d/ argument**. Add the **<staticPodPath: <the-directory>** field in the kubelet configuration file.
+3. Configure your kubelet on the node to use this directory by running it **with --pod-manifest-path=/etc/kubelet.d/ argument**. 
+
+   ```sh
+   KUBELET_ARGS="--cluster-dns=10.254.0.10 --cluster-domain=kube.local --pod-manifest-path=/etc/kubelet.d/"
+   ```
+
+   Add the **<staticPodPath: <the-directory>** field in the kubelet configuration file.
 
 4. Restart the kubelet: `systemctl restart kubelet`
 
@@ -573,36 +572,13 @@ spec: # specification about Kubernetes object `kind`
     - name: nginx-container
       image: nginx
   nodeName: # by default is empty
-  tolerations:
-    - key: "app"
-      operator: "Equal"
-      value: "blue"
-      effect: "NoSchedule" 
-  affinity:
-    nodeAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        nodeSelectorTerms:
-        - matchExpressions:
-          - key: size
-            operator: In
-            values:
-            - Large
-  nodeSelector:
-    size: Large
-  resources:
-    requests:
-      memory: "1Gi"
-      cpu: 1
-  limits:
-    memory: "2Gi"
-    cpu: 2
-    
+  ...
   schedulerName: my-custom-scheduler				👈
 ```
 
 ```bash
 kubectl get events
-kubectl logs my-custom-scheduler --name-space=kube-system
+kubectl logs my-custom-scheduler --namespace=kube-system
 ```
 
 ## Extras:
@@ -611,7 +587,7 @@ kubectl logs my-custom-scheduler --name-space=kube-system
 
    -  ```powershell
      kubectl get pods --namespace=kube-system
-      ```
+     ```
 
 2. How to create a custom-scheduler?
 
@@ -715,4 +691,5 @@ kubectl logs my-custom-scheduler --name-space=kube-system
      kubectl create -f my-scheduler.yaml 
      ```
      
+
 [Back to Contents ⬆](#Contents)
