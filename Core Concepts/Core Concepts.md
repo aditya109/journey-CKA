@@ -1,8 +1,42 @@
-# Table of Contents
-
--  
-
 # Core Concepts
+
+## Contents
+
+- [Core Concepts](#core-concepts)
+  * [Kubernetes Architecture](#kubernetes-architecture)
+  * [ETCD](#etcd)
+      - [Install ETCD](#install-etcd)
+      - [Operate ETCD](#operate-etcd)
+      - [ETCD Cluster](#etcd-cluster)
+  * [Kube-API Server](#kube-api-server)
+  * [Controller Manager](#controller-manager)
+      - [View kube-controller-manager – kubeadm](#view-kube-controller-manager---kubeadm)
+  * [Kube Scheduler](#kube-scheduler)
+      - [View kube-scheduler – kubeadm](#view-kube-scheduler---kubeadm)
+  * [Kubelet](#kubelet)
+  * [Kube Proxy](#kube-proxy)
+    + [PODs](#pods)
+      - [Using PODs](#using-pods)
+      - [Pod Definition YAML](#pod-definition-yaml)
+    + [ReplicaSets](#replicasets)
+      - [Labels and Selectors](#labels-and-selectors)
+      - [Scaling Replicas](#scaling-replicas)
+    + [Deployments](#deployments)
+    + [Namespaces](#namespaces)
+      - [Resource Quota](#resource-quota)
+    + [Services](#services)
+      - [Service Types:](#service-types-)
+      - [Services ClusterIP (default type of a service)](#services-clusterip--default-type-of-a-service-)
+      - [Services Headless](#services-headless)
+      - [Services NodePort](#services-nodeport)
+      - [Services LoadBalancer](#services-loadbalancer)
+    + [Kubernetes Imperative and Declarative](#kubernetes-imperative-and-declarative)
+      - [Imperative Commands](#imperative-commands)
+        * [Create objects](#create-objects)
+        * [Update Objects](#update-objects)
+      - [Declarative Commands](#declarative-commands)
+
+<small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
 
 ## Kubernetes Architecture
 
@@ -324,7 +358,7 @@ A *traditional* container provides several forms of isolation:
 
 The tools that are used under the hood are `Linux namespaces` and `control-groups (cgroups)`.
 
-**`Control groups` are a convenient wat to limit resources such as CPU or memory that a particular process can use.**
+**`Control groups` are a convenient way to limit resources such as CPU or memory that a particular process can use.**
 
 **`Namespaces` are in charge of isolating the process and limiting what it can see.**
 
@@ -805,7 +839,7 @@ kubectl delete -f nginx.yml
 
 #### Declarative Commands
 
-`````powershell
+```powershell
 kubectl apply -f nginx.yaml
 ```
 
