@@ -58,7 +58,6 @@
 
 ```powershell
 ➜ kubectl get node docker-desktop -o yaml > docker-desktop.yaml
- 
 ```
 
 
