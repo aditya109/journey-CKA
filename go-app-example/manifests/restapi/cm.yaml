@@ -1,0 +1,10 @@
+apiVersion: v1
+data:
+  dbname: library
+  host: mysql.database:3306     # fully qualified mysql service name
+  dbuser: root
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: restapi-cm
+  namespace: restapi

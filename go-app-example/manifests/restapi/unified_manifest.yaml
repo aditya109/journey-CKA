@@ -1,0 +1,92 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  creationTimestamp: null
+  name: restapi
+spec: {}
+status: {}
+---
+apiVersion: v1
+data:
+  rootpassword: cGFzc3dvcmQ=
+kind: Secret
+metadata:
+  creationTimestamp: null
+  name: mysql-password
+  namespace: restapi
+---
+apiVersion: v1
+data:
+  dbname: library
+  host: mysql.database:3306     # fully qualified mysql service name
+  dbuser: root
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: restapi-cm
+  namespace: restapi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: restapi
+  name: restapi
+  namespace: restapi
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: restapi
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: restapi
+    spec:
+      containers:
+      - image: daitya96/library:0.1.0
+        name: library
+        resources: {}
+        env: 
+        - name: DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: restapi-cm
+              key: host
+        - name: DB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: restapi-cm
+              key: dbname
+        - name: DB_USER
+          valueFrom:
+            configMapKeyRef:
+              name: restapi-cm
+              key: dbuser
+        - name: DB_PASS
+          valueFrom:
+            secretKeyRef:
+              name: mysql-password
+              key: rootpassword
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    app: restapi
+  name: restapi
+  namespace: restapi
+spec:
+  ports:
+  - port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: restapi
+status:
+  loadBalancer: {}
