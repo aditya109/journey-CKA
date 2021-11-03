@@ -663,6 +663,8 @@ Configuring a pod to use secret
              secretName: app-secret
    ```
 
+Also, check the following link : https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/
+
 ## Multi Container PODs
 
 [Extending applications on Kubernetes with multi-container pods (learnk8s.io)](https://learnk8s.io/sidecar-containers-patterns)
@@ -810,6 +812,7 @@ data:
             proxy_pass http://localhost:9201;
         }
     }
+```
 
 The above means the following:
 
@@ -818,7 +821,7 @@ The above means the following:
 
 We can confirm it's working by making an HTTPS request from within the cluster.
 
-​```bash
+```bash
 kubectl run -it --rm --image=curlimages/curl curl \
   -- curl -k https://elasticsearch:9200
 {
@@ -848,7 +851,7 @@ kubectl run -it --rm --image=curlimages/curl curl \
 
   Here are a few other things one can do with the Ambassador Pattern:
 
-  - If we want all the traffic in the cluster to be encrypted with TS certificate, we might decide to install an nginx proxy in every pod in the cluster. We can even go a step farther and use `mutual TLS` to ensure that all requests are authenticated as well as encrypted. (*Primary approach used service meshes such as Istio and Linkerd.*)
+  - If we want all the traffic in the cluster to be encrypted with TLS certificate, we might decide to install an nginx proxy in every pod in the cluster. We can even go a step farther and use `mutual TLS` to ensure that all requests are authenticated as well as encrypted. (*Primary approach used service meshes such as Istio and Linkerd.*)
   - We can use a proxy to ensure that a centralized OAuth authority authenticates all requests by verifying JWTs. One example of this is `gcp-iap-auth`, which verifies that requests are authenticated by GCP Identity-Aware-Proxy.
   - We can connect over a secure tunnel to an external database. This is especially handy for databases that don't have built-in TLS support. Another example is the Google Cloud SQL Proxy.
 
@@ -882,7 +885,7 @@ kubectl run -it --rm --image=curlimages/curl curl \
   - Since all containers share the same network namespace, a single container can listen to all connections – even external ones.
   - The rest of the containers only accept connections from localhost – rejecting any external connection.
 
-  > A point to notes is though, because the network namespace is shared, multiple containers in a pod can't listen on the same port !
+  > A point to note is although, because the network namespace is shared, multiple containers in a pod can't listen on the same port !
 
 - ##### *Adapter Pattern:* *(exposing metrics with a standard interface)*
 
