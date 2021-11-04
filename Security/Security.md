@@ -125,11 +125,11 @@ Let's assume we have a file called `user-details.csv`.
 
 The table structure looks something like this:
 
-|             |       |       |        |
-| ----------- | ----- | ----- | ------ |
-| password123 | user1 | u0001 | group1 |
-| password123 | user2 | u0002 | group2 |
-| password123 | user3 | u0003 | group1 |
+| Password    | Username | UserID | Group  |
+| ----------- | -------- | ------ | ------ |
+| password123 | user1    | u0001  | group1 |
+| password123 | user2    | u0002  | group2 |
+| password123 | user3    | u0003  | group1 |
 
 First column, is the password, followed by username, user ID and group name.
 
@@ -205,11 +205,11 @@ Similar, thing can be done for token file as well.
 --token-auth-file=user-details.csv
 ```
 
-|                               |        |       |        |
-| ----------------------------- | ------ | ----- | ------ |
-| asdaf32jkh1k4jh124jhg23j4hgjk | user10 | u0001 | group1 |
-| asdaf32jkh1k4jh124jhg23j4hgjk | user11 | u0002 | group  |
-| asdaf32jkh1k4jh124jhg23j4hgjk | user12 | u0003 | group1 |
+| Bearer Token                  | Username | UserID | Group  |
+| ----------------------------- | -------- | ------ | ------ |
+| asdaf32jkh1k4jh124jhg23j4hgjk | user10   | u0001  | group1 |
+| asdaf32jkh1k4jh124jhg23j4hgjk | user11   | u0002  | group  |
+| asdaf32jkh1k4jh124jhg23j4hgjk | user12   | u0003  | group1 |
 
 ###### To request for authentication
 
@@ -958,7 +958,8 @@ spec:
       --tls-cert-file=/etc/srv/kubernetes/pki/apiserver.crt
       --tls-private-key-file=/etc/srv/kubernetes/pki/apiserver.key
       # 👇
-      --kubelet-client-certificate=/etc/srv/kubernetes/pki/apiserver-client.crt  	   # 👇
+      --kubelet-client-certificate=/etc/srv/kubernetes/pki/apiserver-client.crt  	   
+      # 👇
       --kubelet-client-key=/etc/srv/kubernetes/pki/apiserver-client.key
       --service-account-key-file=/etc/srv/kubernetes/pki/serviceaccount.crt
       --token-auth-file=/etc/srv/kubernetes/known_tokens.csv
@@ -1158,7 +1159,7 @@ To sign a certificate, whenever a CSR is received, the following steps are follo
        type: Failed
    ```
 
-   The `request` field value here can be extracted off and decoded to `base64`, which can be shared to the respective by the user.
+   The `request` field value here ca819710819710n be extracted off and decoded to `base64`, which can be shared to the respective by the user.
 
    ```bash
    >  echo LS0tLS1CRUdJTiBDRVJUSUZJQ0FURSBSRVFVRVNULS0tLS0KTUlJQ1ZEQ0NBVHdDQVFBd0R6RU5NQXNHQTFVRUF3d0V......hlZFJIaWYrYko1WW9na1pxK0ZCcTdBYTJQMzA4R1lsdzdwOHdEVDJYdXkxSzJueWo5NmRlMTBjcC8KVW5RZElYQU1WMGJ2TXNlWVpDVlpyVkMzQ3ppY0IyakEKLS0tLS1FTkQgQ0VSVElGSUNBVEUgUkVRVUVTVC0tLS0tCg== |base64 --decode
@@ -1447,7 +1448,7 @@ Run `kubectl proxy` to hit apiserver. It should setup a proxy on port 8080 or `h
 
 #### kube-proxy v/s kubectl proxy
 
-<tbd/>
+
 
 ## Authorization
 
