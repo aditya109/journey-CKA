@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: pod-m
+  name: pod-m
+spec:
+  containers:
+  - image: nginx
+    name: nginx
+    resources: {}
+  - name: redis
+    image: redis
+    volumeMounts:
+    - name: redis-storage
+      mountPath: /data/redis
+  - name: consul
+    image: consul
+  volumes:
+  - name: redis-storage
+    emptyDir: {}
+    
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
