@@ -311,7 +311,12 @@
               restartPolicy: OnFailure
     ```
 
-15. Create a job that runs 20 times, 5 containers at a time, and prints "Hello parallel world"  .
+11. Create a job that runs 20 times, 5 containers at a time, and prints "Hello parallel world".
+
+    ```yaml
+    ```
+
+    
 
 16. Get the list of pod by doing a CURL to the kube-apiserver.
 
@@ -353,36 +358,55 @@
 
 20. Create a service that uses an external load balancer and points to a 3 pod cluster running nginx.  
 
-21. Get the status of all the master components.
-22. Create a pod that runs on a given node. 
+17. Get the status of all the master components.
+
+18. Create a pod that runs on a given node. 
+
 23. Create a pod that uses secrets. 
     1. Pull secrets from environment variable.
     2. Pull secrets from a volume.
     3. Dump the secrets out via kubectl to show it worked.
+    
 24. Create a static pod and then delete the pod.  
 
-25. Create a pod that do not get IP from the range of allocated CIDR block. Ensure that this is not a static pod.  
+21. Create a pod that do not get IP from the range of allocated CIDR block. Ensure that this is not a static pod.  
+
 26. Create a service that uses a scratch disk.
     1. Change the service to mount a disk from the host. [Local-PV]
     2. Change the service to mount a persistent volume. [hostPath PV]
-27. Create a service that manually requires endpoint creation - and create that too.  
-28. Create a daemon set and change the update strategy to do a rolling update but delaying 30 seconds.
-29. Create a horizontal autoscaling group that starts with 2 pods and scales when CPU usage is over 50%.  
-30. Create a custom resource definition and display it in the API with cURL.
-31. Create a service that references an externalname and test that this works from another pod.
-32. Create a pod that runs all processes as user 1000.  
-33. Write an ingress rule that redirects calls to `/foo` to one service and to `/bar` to another.
+    
+23. Create a service that manually requires endpoint creation - and create that too.  
+
+24. Create a daemon set and change the update strategy to do a rolling update but delaying 30 seconds.
+
+25. Create a horizontal autoscaling group that starts with 2 pods and scales when CPU usage is over 50%.  
+
+26. Create a custom resource definition and display it in the API with cURL.
+
+27. Create a service that references an externalname and test that this works from another pod.
+
+28. Create a pod that runs all processes as user 1000.  
+
+29. Write an ingress rule that redirects calls to `/foo` to one service and to `/bar` to another.
+
 34. Write a service that exposes nginx on a nodeport.
     1. Change it to use a cluster port.
     2. Scale the service.
     3. Change it to use an external IP.
     4. Change it to use a load balancer.
-35. Deploy nginx with 3 replicas and then expose a port and use port forwarding to talk to a specific port.
-36. Get logs for Kubernetes master components.
-37. Get logs for Kubelet.  
-38. Backup an etcd cluster.
-39. List the members of an etcd cluster.
-40. Find the health of etcd.
+    
+31. Deploy nginx with 3 replicas and then expose a port and use port forwarding to talk to a specific port.
+
+32. Get logs for Kubernetes master components.
+
+33. Get logs for Kubelet.  
+
+34. Backup an etcd cluster.
+
+35. List the members of an etcd cluster.
+
+36. Find the health of etcd.
+
 41. Create a namespace [Important]
     1. Run a pod in the new namespace.
     2. Put memory limits on the namespace.
