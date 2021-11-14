@@ -18,7 +18,7 @@
        - ReadWriteOnce
      hostPath:
        path: "/mnt/data"
-   --- 
+   ---
    apiVersion: v1
    kind: PersistentVolume
    metadata:
@@ -36,8 +36,8 @@
    ```
 
    ```sh
-   # creating pv 
-   kubectl create -f pv-volume.yaml 
+   # creating pv
+   kubectl create -f pv-volume.yaml
    persistentvolume/talex-pv-volume created
    persistentvolume/ruby-pv-volume created
    ```
@@ -72,7 +72,7 @@
 
    - Browse through the `/etcd/kubernetes/manifests/kube-apiserver.yaml`.
 
-4. Create 2 pods -- `mypod1` and `mypod2` , `mypod2` should be scheduled to run anywhere `mypod1` is running.  
+4. Create 2 pods -- `mypod1` and `mypod2` , `mypod2` should be scheduled to run anywhere `mypod1` is running.
 
    - We can label a node.
 
@@ -98,9 +98,9 @@
        name: mypod1
      spec:
        containers:
-       - image: nginx
-         name: nginx
-         resources: {}
+         - image: nginx
+           name: nginx
+           resources: {}
        dnsPolicy: ClusterFirst
        restartPolicy: Always
      status: {}
@@ -118,25 +118,25 @@
        affinity:
          podAffinity:
            requiredDuringSchedulingIgnoredDuringExecution:
-           - labelSelector:
-               matchExpressions:
-               - key: run
-                 operator: In
-                 values:
-                 - nginx
-             topologyKey: topology.kubernetes.io/zone
+             - labelSelector:
+                 matchExpressions:
+                   - key: run
+                     operator: In
+                     values:
+                       - nginx
+               topologyKey: topology.kubernetes.io/zone
        containers:
-       - image: nginx
-         name: nginx
-         resources: {}
+         - image: nginx
+           name: nginx
+           resources: {}
        dnsPolicy: ClusterFirst
        restartPolicy: Always
      status: {}
      ```
 
-9. Questions on `initContainers`:
+5. Questions on `initContainers`:
 
-   1. A container will start only if a file is present. 
+   1. A container will start only if a file is present.
 
       ```yaml
       apiVersion: v1
@@ -145,149 +145,154 @@
         name: test-pd
       spec:
         containers:
-        - image: alpine
-          name: test-container
-          command: ['sh', '-c', 'if [! -f /mnt/a.txt]; then exit; else sleep 999999; fi;]']
-          volumeMounts:
-          - mountPath: /mnt
-            name: cache-volume
+          - image: alpine
+            name: test-container
+            command:
+              [
+                "sh",
+                "-c",
+                "if [! -f /mnt/a.txt]; then exit; else sleep 999999; fi;]",
+              ]
+            volumeMounts:
+              - mountPath: /mnt
+                name: cache-volume
         initContainers:
-        - name: install
-          image: busybox
-          command: ['sh', '-c', 'FILE=/mnt/a.txt && echo > $FILE']
-          volumeMounts:
-          - name: cache-volume
-            mountPath: '/mnt'
+          - name: install
+            image: busybox
+            command: ["sh", "-c", "FILE=/mnt/a.txt && echo > $FILE"]
+            volumeMounts:
+              - name: cache-volume
+                mountPath: "/mnt"
         volumes:
-        - name: cache-volume
-          emptyDir: {}
+          - name: cache-volume
+            emptyDir: {}
       ```
 
-10. Create a deployment running nginx version 1.12.2 that will run in 2 pods.
+6. Create a deployment running nginx version 1.12.2 that will run in 2 pods.
 
-    ```sh
-    kubectl create deployment nginx-dep --image=nginx:1.12.2 --replicas=2 
-    ```
+   ```sh
+   kubectl create deployment nginx-dep --image=nginx:1.12.2 --replicas=2
+   ```
 
-    1. Scale this to 4 pods.
+   1. Scale this to 4 pods.
 
-       ```sh
-       kubectl scale --replicas=4 deployment.apps/nginx-dep
-       ```
+      ```sh
+      kubectl scale --replicas=4 deployment.apps/nginx-dep
+      ```
 
-    2. Scale it back to 2 pods.
+   2. Scale it back to 2 pods.
 
-       ```sh
-       kubectl scale --replicas=2 deployment.apps/nginx-dep
-       ```
+      ```sh
+      kubectl scale --replicas=2 deployment.apps/nginx-dep
+      ```
 
-     3. Upgrade this to 1.13.8
+   3. Upgrade this to 1.13.8
 
-        ```sh
-        kubectl set image deployment nginx-dep nginx=nginx:1.13.8
-        ```
+      ```sh
+      kubectl set image deployment nginx-dep nginx=nginx:1.13.8
+      ```
 
-    4. Check the status of the upgrade.
+   4. Check the status of the upgrade.
 
-       ```sh
-       kubectl rollout status deployment nginx-dep
-       Waiting for deployment "nginx-dep" rollout to finish: 2 out of 4 new replicas have been updated...
-       Waiting for deployment "nginx-dep" rollout to finish: 2 out of 4 new replicas have been updated...
-       Waiting for deployment "nginx-dep" rollout to finish: 2 out of 4 new replicas have been updated...
-       Waiting for deployment "nginx-dep" rollout to finish: 2 out of 4 new replicas have been updated...
-       Waiting for deployment "nginx-dep" rollout to finish: 2 out of 4 new replicas have been updated...
-       Waiting for deployment "nginx-dep" rollout to finish: 3 out of 4 new replicas have been updated...
-       Waiting for deployment "nginx-dep" rollout to finish: 3 out of 4 new replicas have been updated...
-       Waiting for deployment "nginx-dep" rollout to finish: 3 out of 4 new replicas have been updated...
-       Waiting for deployment "nginx-dep" rollout to finish: 3 out of 4 new replicas have been updated...
-       Waiting for deployment "nginx-dep" rollout to finish: 1 old replicas are pending termination...
-       Waiting for deployment "nginx-dep" rollout to finish: 1 old replicas are pending termination...
-       Waiting for deployment "nginx-dep" rollout to finish: 1 old replicas are pending termination...
-       Waiting for deployment "nginx-dep" rollout to finish: 3 of 4 updated replicas are available...
-       deployment "nginx-dep" successfully rolled out
-       ```
+      ```sh
+      kubectl rollout status deployment nginx-dep
+      Waiting for deployment "nginx-dep" rollout to finish: 2 out of 4 new replicas have been updated...
+      Waiting for deployment "nginx-dep" rollout to finish: 2 out of 4 new replicas have been updated...
+      Waiting for deployment "nginx-dep" rollout to finish: 2 out of 4 new replicas have been updated...
+      Waiting for deployment "nginx-dep" rollout to finish: 2 out of 4 new replicas have been updated...
+      Waiting for deployment "nginx-dep" rollout to finish: 2 out of 4 new replicas have been updated...
+      Waiting for deployment "nginx-dep" rollout to finish: 3 out of 4 new replicas have been updated...
+      Waiting for deployment "nginx-dep" rollout to finish: 3 out of 4 new replicas have been updated...
+      Waiting for deployment "nginx-dep" rollout to finish: 3 out of 4 new replicas have been updated...
+      Waiting for deployment "nginx-dep" rollout to finish: 3 out of 4 new replicas have been updated...
+      Waiting for deployment "nginx-dep" rollout to finish: 1 old replicas are pending termination...
+      Waiting for deployment "nginx-dep" rollout to finish: 1 old replicas are pending termination...
+      Waiting for deployment "nginx-dep" rollout to finish: 1 old replicas are pending termination...
+      Waiting for deployment "nginx-dep" rollout to finish: 3 of 4 updated replicas are available...
+      deployment "nginx-dep" successfully rolled out
+      ```
 
-    5. How do you do this in a way that you can see history of what happened?
+   5. How do you do this in a way that you can see history of what happened?
 
-       ```sh
-       kubectl rollout history deployment nginx-dep
-       deployment.apps/nginx-dep 
-       REVISION  CHANGE-CAUSE
-       1         <none>
-       2         <none>
-       ```
+      ```sh
+      kubectl rollout history deployment nginx-dep
+      deployment.apps/nginx-dep
+      REVISION  CHANGE-CAUSE
+      1         <none>
+      2         <none>
+      ```
 
-    6. Undo the upgrade.
+   6. Undo the upgrade.
 
-       ```sh
-       kubectl rollout undo deployment nginx-dep
-       deployment.apps/nginx-dep rolled back
-       ```
+      ```sh
+      kubectl rollout undo deployment nginx-dep
+      deployment.apps/nginx-dep rolled back
+      ```
 
-11. Create a pod that has a liveness check.  
+7. Create a pod that has a liveness check.
 
-    ```yaml
-    apiVersion: v1
-    kind: Pod
-    metadata:
-      labels:
-        test: liveness
-      name: liveness-exec
-    spec:
-      containers:
-      - name: liveness
-        image: k8s.gcr.io/busybox
-        args:
-        - /bin/sh
-        - -c
-        - touch /tmp/healthy; sleep 30; rm -rf /tmp/healthy; sleep 600
-        livenessProbe:
-          exec:
-            command:
-            - cat
-            - /tmp/healthy
-          initialDelaySeconds: 5
-          periodSeconds: 5
-    ```
+   ```yaml
+   apiVersion: v1
+   kind: Pod
+   metadata:
+     labels:
+       test: liveness
+     name: liveness-exec
+   spec:
+     containers:
+       - name: liveness
+         image: k8s.gcr.io/busybox
+         args:
+           - /bin/sh
+           - -c
+           - touch /tmp/healthy; sleep 30; rm -rf /tmp/healthy; sleep 600
+         livenessProbe:
+           exec:
+             command:
+               - cat
+               - /tmp/healthy
+           initialDelaySeconds: 5
+           periodSeconds: 5
+   ```
 
-12. Create a pod that has a readiness check. 
+8. Create a pod that has a readiness check.
 
-    ```yaml
-    apiVersion: v1
-    kind: Pod
-    metadata:
-      labels:
-        test: readiness
-      name: readiness-exec
-    spec:
-      containers:
-      - name: readiness
-        image: k8s.gcr.io/busybox
-        args:
-        - /bin/sh
-        - -c
-        - touch /tmp/healthy; sleep 30; rm -rf /tmp/healthy; sleep 600
-        readinessProbe:
-          exec:
-            command:
-            - cat
-            - /tmp/healthy
-          initialDelaySeconds: 5
-          periodSeconds: 5
-    ```
+   ```yaml
+   apiVersion: v1
+   kind: Pod
+   metadata:
+     labels:
+       test: readiness
+     name: readiness-exec
+   spec:
+     containers:
+       - name: readiness
+         image: k8s.gcr.io/busybox
+         args:
+           - /bin/sh
+           - -c
+           - touch /tmp/healthy; sleep 30; rm -rf /tmp/healthy; sleep 600
+         readinessProbe:
+           exec:
+             command:
+               - cat
+               - /tmp/healthy
+           initialDelaySeconds: 5
+           periodSeconds: 5
+   ```
 
-13. Create a busybox container without a manifest. Then edit the manifest.  
+9. Create a busybox container without a manifest. Then edit the manifest.
 
-    ```sh
-    kubectl run busybox-without-manifest --image=busybox
-    kubectl edit pod busybox-without-manifest
-    
-    ---OR--- 
-    kubectl get pod busybox-without-manifest -oyaml > busybox-without-manifest.yaml
-    vi busybox-without-manifest.yaml 
-    ```
+   ```sh
+   kubectl run busybox-without-manifest --image=busybox
+   kubectl edit pod busybox-without-manifest
 
-14. Create a job that runs every 3 minutes and prints out the current time.  
+   ---OR---
+   kubectl get pod busybox-without-manifest -oyaml > busybox-without-manifest.yaml
+   vi busybox-without-manifest.yaml
+   ```
+
+10. Create a job that runs every 3 minutes and prints out the current time.
 
     ```yaml
     apiVersion: batch/v1
@@ -301,105 +306,115 @@
           template:
             spec:
               containers:
-              - name: every-three-minute
-                image: busybox
-                imagePullPolicy: IfNotPresent
-                command:
-                - /bin/sh
-                - -c
-                - date
+                - name: every-three-minute
+                  image: busybox
+                  imagePullPolicy: IfNotPresent
+                  command:
+                    - /bin/sh
+                    - -c
+                    - date
               restartPolicy: OnFailure
     ```
 
 11. Create a job that runs 20 times, 5 containers at a time, and prints "Hello parallel world".
 
     ```yaml
+
     ```
 
-    
-
-16. Get the list of pod by doing a CURL to the kube-apiserver.
+12. Get the list of pod by doing a CURL to the kube-apiserver.
 
     - ```sh
       kubectl proxy
-      curl -X GET http://127.0.0.1:8001/api/v1/namespaces/default/pods 
+      curl -X GET http://127.0.0.1:8001/api/v1/namespaces/default/pods
+
+      ```
 
     - ```sh
       # create a service account
       kubectl create sa podsa
-      
+
       # create a clusterrole
       kubectl create clusterrole podcr --verb=get --verb=watch --verb=list --resource=pods
-      
-      # create a rolebinding 
+
+      # create a rolebinding
       create rolebinding podsa:podcr --clusterrole=podcr --serviceaccount=default:podsa
-      
+
       # get url of kube-apiserver endpoint
       kubectl get endpoints
       API_SERVER=192.168.49.2:8443
-      
+
       # get secret of your sa
       k describe secret podsa-token-n48xb -oyaml
-      
+
       # base64 decode your ca.crt and store it in ca.crt
       echo LS0tLS1CRUdJ.....tLS0tCg== | base64 -d > ca.crt
-      
+
       # base64 decode your ca.crt and store it in TOKEN variable
       TOKEN=$(echo LS0tLS1CRUdJ.....tLS0tCg== | base64 -d)
-      
+
       curl -s GET $API_SERVER/api/v1/namespaces/default/pods --header "Authorization: Bearer $TOKEN" --cacert ca.crt
       ```
 
-17. Deploy a pod with the wrong image name (like --image=nginy) and find the error message.  
+13. Deploy a pod with the wrong image name (like --image=nginy) and find the error message.
 
-18. Get logs for a pod which has multiple containers running.  
+    ```sh
+    kubectl create ns app
+    kubectl run pod --name=bad-pod --image=nginy
+    kubectl describe pod bad-pod -A
+    ```
 
-19. Deploy nginx with 3 replicas and then expose a port and use port forwarding to talk to a specific port.
+    The following output is displayed:
 
-20. Create a service that uses an external load balancer and points to a 3 pod cluster running nginx.  
+    ```sh
+    
+    ```
+
+14. Get logs for a pod which has multiple containers running.
+
+15. Deploy nginx with 3 replicas and then expose a port and use port forwarding to talk to a specific port.
+
+16. Create a service that uses an external load balancer and points to a 3 pod cluster running nginx.
 
 17. Get the status of all the master components.
 
-18. Create a pod that runs on a given node. 
+18. Create a pod that runs on a given node.
 
-23. Create a pod that uses secrets. 
+19. Create a pod that uses secrets.
     1. Pull secrets from environment variable.
     2. Pull secrets from a volume.
     3. Dump the secrets out via kubectl to show it worked.
-    
-24. Create a static pod and then delete the pod.  
+20. Create a static pod and then delete the pod.
 
-21. Create a pod that do not get IP from the range of allocated CIDR block. Ensure that this is not a static pod.  
+21. Create a pod that do not get IP from the range of allocated CIDR block. Ensure that this is not a static pod.
 
-26. Create a service that uses a scratch disk.
+22. Create a service that uses a scratch disk.
     1. Change the service to mount a disk from the host. [Local-PV]
     2. Change the service to mount a persistent volume. [hostPath PV]
-    
-23. Create a service that manually requires endpoint creation - and create that too.  
+23. Create a service that manually requires endpoint creation - and create that too.
 
 24. Create a daemon set and change the update strategy to do a rolling update but delaying 30 seconds.
 
-25. Create a horizontal autoscaling group that starts with 2 pods and scales when CPU usage is over 50%.  
+25. Create a horizontal autoscaling group that starts with 2 pods and scales when CPU usage is over 50%.
 
 26. Create a custom resource definition and display it in the API with cURL.
 
 27. Create a service that references an externalname and test that this works from another pod.
 
-28. Create a pod that runs all processes as user 1000.  
+28. Create a pod that runs all processes as user 1000.
 
 29. Write an ingress rule that redirects calls to `/foo` to one service and to `/bar` to another.
 
-34. Write a service that exposes nginx on a nodeport.
+30. Write a service that exposes nginx on a nodeport.
     1. Change it to use a cluster port.
     2. Scale the service.
     3. Change it to use an external IP.
     4. Change it to use a load balancer.
-    
 31. Deploy nginx with 3 replicas and then expose a port and use port forwarding to talk to a specific port.
 
 32. Get logs for Kubernetes master components.
 
-33. Get logs for Kubelet.  
+33. Get logs for Kubelet.
 
 34. Backup an etcd cluster.
 
@@ -407,18 +422,19 @@
 
 36. Find the health of etcd.
 
-41. Create a namespace [Important]
+37. Create a namespace [Important]
+
     1. Run a pod in the new namespace.
     2. Put memory limits on the namespace.
     3. Limit pods to 2 persistent volumes in this namespace
 
-42. Create a networking policy such that only pods with the label access=granted can talk to it.
+38. Create a networking policy such that only pods with the label access=granted can talk to it.
 
-    1. Create an nginx pod and attach this policy to it. 
+    1. Create an nginx pod and attach this policy to it.
     2. Create a busybox pod and attempt to talk to nginx - should be blocked.
     3. Attach the label to busybox and try again - should be allowed.
 
-43. Create a multi containers of `nginx`, `redis` and `consul`.  
+39. Create a multi containers of `nginx`, `redis` and `consul`.
 
     ```yaml
     kind: Pod
@@ -429,31 +445,31 @@
       name: pod-m
     spec:
       containers:
-      - image: nginx
-        name: nginx
-        resources: {}
-      - name: redis
-        image: redis
-        volumeMounts:
-        - name: redis-storage
-          mountPath: /data/redis
-      - name: consul
-        image: consul
+        - image: nginx
+          name: nginx
+          resources: {}
+        - name: redis
+          image: redis
+          volumeMounts:
+            - name: redis-storage
+              mountPath: /data/redis
+        - name: consul
+          image: consul
       volumes:
-      - name: redis-storage
-        emptyDir: {}
+        - name: redis-storage
+          emptyDir: {}
       dnsPolicy: ClusterFirst
       restartPolicy: Always
     status: {}
     ```
 
-44. Troubleshooting not ready state node. 
+40. Troubleshooting not ready state node.
 
-45. Add missing worker node -- TLS bootstrapping. 
+41. Add missing worker node -- TLS bootstrapping.
 
-46. Set up a Kubernetes cluster from scratch by using Kubeadm.
+42. Set up a Kubernetes cluster from scratch by using Kubeadm.
 
-47. Create Redis pod without using PV.  
+43. Create Redis pod without using PV.
 
     ```yaml
     apiVersion: v1
@@ -462,17 +478,17 @@
       name: redis
     spec:
       containers:
-      - name: redis
-        image: redis
-        volumeMounts:
-        - name: redis-storage
-          mountPath: /data/redis
+        - name: redis
+          image: redis
+          volumeMounts:
+            - name: redis-storage
+              mountPath: /data/redis
       volumes:
-      - name: redis-storage
-        emptyDir: {}
+        - name: redis-storage
+          emptyDir: {}
     ```
 
-48. Creating PVolume with host path.  
+44. Creating PVolume with host path.
 
     ```yaml
     apiVersion: v1
@@ -491,13 +507,13 @@
         path: "/mnt/data"
     ```
 
-49. Create pods,service in particular namespace, list all services in particular namespace. 
+45. Create pods,service in particular namespace, list all services in particular namespace.
 
     ```sh
     kubectl get svc -n NAMESPACE_NAME
     ```
 
-50. Create nginx deployment nginx-random expose it; then create another pod busybox and do the following:  
+46. Create nginx deployment nginx-random expose it; then create another pod busybox and do the following:
 
     1. Dnlookup service
     2. Dnslookup pod
@@ -518,75 +534,28 @@
             run: my-nginx
         spec:
           containers:
-          - name: my-nginx
-            image: nginx
-            ports:
-            - containerPort: 80
+            - name: my-nginx
+              image: nginx
+              ports:
+                - containerPort: 80
     ```
 
     ```sh
     kubectl create -f my-nginx.yaml
     kubectl expose deployment/my-nginx
-    
+
     kubectl run curl --image=radial/busyboxplus:curl -i --tty
     kubectl exec -it curl -- sh
     nslookup my-nginx
     nslookup my-nginx-5b56ccd65f-9nrh6
     ```
 
-51. Expose a service to Nodeport.  Edit the yaml.
+47. Expose a service to Nodeport. Edit the yaml.
 
     ```sh
     kubectl expose service nginx --port=443 --target-port=8443 --name=nginx-https --type=NodePort --dry-run=client -oyaml > nginx-np.yaml
     ```
 
-52. Create a pod that by passes kube-scheduler. Ensure that this is not a static pod.  
+48. Create a pod that by passes kube-scheduler. Ensure that this is not a static pod.
     - Add a `nodeSelector` field
     - Add `schedulerName` field
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
