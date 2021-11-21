@@ -1,0 +1,30 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: pi-with-ttl
+spec:
+  parallelism: 5
+  completions: 1
+  ttlSecondsAfterFinished: 30
+  template:
+    spec:
+      containers:
+      - name: pi2
+        image: busybox
+        command: ["/bin/sh",  "-c", "echo hello parallel world >> /var/log/example.log"]
+        volumeMounts:
+        - mountPath: /var/log
+          name: mydir
+        - mountPath: /var/log/example.log
+          name: myfile
+      volumes:
+      - name: mydir
+        hostPath:
+          # Ensure the file directory is created.
+          path: /var/log
+          type: DirectoryOrCreate
+      - name: myfile
+        hostPath:
+          path: /var/log/example.log
+          type: FileOrCreate
+      restartPolicy: OnFailure

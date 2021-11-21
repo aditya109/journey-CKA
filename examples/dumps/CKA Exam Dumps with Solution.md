@@ -1,6 +1,8 @@
 1. List your `PersistentVolume` by `Name`, `Size`.
 
    ```yaml
+   
+   
    # first let's create PersistentVolumes
    # pv-volume.yaml
    ---
@@ -230,7 +232,7 @@
       ```
 
 7. Create a pod that has a liveness check.
-
+   
    ```yaml
    apiVersion: v1
    kind: Pod
@@ -254,7 +256,7 @@
            initialDelaySeconds: 5
            periodSeconds: 5
    ```
-
+   
 8. Create a pod that has a readiness check.
 
    ```yaml
@@ -295,7 +297,6 @@
 10. Create a job that runs every 3 minutes and prints out the current time.
 
     ```yaml
-    apiVersion: batch/v1
     kind: CronJob
     metadata:
       name: etm
@@ -316,10 +317,57 @@
               restartPolicy: OnFailure
     ```
 
-11. Create a job that runs 20 times, 5 containers at a time, and prints "Hello parallel world".
+12. Create a job that runs 20 times, 5 containers at a time, and prints "Hello parallel world".
 
     ```yaml
+    apiVersion: batch/v1
+    kind: Job
+    metadata:
+      name: q11
+    spec:
+      completions: 5
+      template:
+        spec:
+          containers:
+          - name: bb1
+            image: busybox
+            command: ["/bin/sh",  "-c", "echo I am job#1"]
+          restartPolicy: Never
+      backoffLimit: 4
+    apiVersion: batch/v1
+    kind: Job
+    metadata:
+      name: q11
+    spec:
+      completions: 20
+      template:
+        metadata:
+          labels:
+            job-name: q11
+        spec:
+          containers:
+          - name: bb1
+            image: busybox
+            command: ["/bin/sh",  "-c", "echo I am job#1"]
+          - name: bb2
+            image: busybox
+            command: ["/bin/sh",  "-c", "echo I am job#2"]
+          - name: bb3
+            image: busybox
+            command: ["/bin/sh",  "-c", "echo I am job#3"]
+          - name: bb4
+            image: busybox
+            command: ["/bin/sh",  "-c", "echo I am job#4"]
+          - name: bb5
+            image: busybox
+            command: ["/bin/sh",  "-c", "echo I am job#5"]
+          restartPolicy: Never
+      backoffLimit: 4
+    ```
 
+    ```sh
+    for i in $(kubectl get pods -l "job-name=q11" | cut -d" " -f1); do if [ $i != "NAME" ]; then kubectl logs $i --all-containers=true; fi; done; 
+    # each new line ends in a semi colon
     ```
 
 12. Get the list of pod by doing a CURL to the kube-apiserver.
@@ -327,35 +375,34 @@
     - ```sh
       kubectl proxy
       curl -X GET http://127.0.0.1:8001/api/v1/namespaces/default/pods
-
       ```
-
+      
     - ```sh
       # create a service account
       kubectl create sa podsa
-
+      
       # create a clusterrole
       kubectl create clusterrole podcr --verb=get --verb=watch --verb=list --resource=pods
-
+      
       # create a rolebinding
       create rolebinding podsa:podcr --clusterrole=podcr --serviceaccount=default:podsa
-
+      
       # get url of kube-apiserver endpoint
       kubectl get endpoints
       API_SERVER=192.168.49.2:8443
-
+      
       # get secret of your sa
       k describe secret podsa-token-n48xb -oyaml
-
+      
       # base64 decode your ca.crt and store it in ca.crt
       echo LS0tLS1CRUdJ.....tLS0tCg== | base64 -d > ca.crt
-
+      
       # base64 decode your ca.crt and store it in TOKEN variable
       TOKEN=$(echo LS0tLS1CRUdJ.....tLS0tCg== | base64 -d)
-
+      
       curl -s GET $API_SERVER/api/v1/namespaces/default/pods --header "Authorization: Bearer $TOKEN" --cacert ca.crt
       ```
-
+    
 13. Deploy a pod with the wrong image name (like --image=nginy) and find the error message.
 
     ```sh
@@ -364,33 +411,179 @@
     kubectl describe pod bad-pod -A
     ```
 
-    The following output is displayed:
+15. Get logs for a pod which has multiple containers running.
 
-    ```sh
+    ```shell
+    for i in $(kubectl get pods -l "pod-name=pod213" | cut -d" " -f1); do; if [ $i != "NAME" ]; then; kubectl logs $i  --all-containers=true; fi; done
+    ```
+
+16. Deploy nginx with 3 replicas and then expose a port and use port forwarding to talk to a specific port.
+
+    ```bash
+    # create basic nginx deployment
+    kubectl create deployment nginx-deployment --port=80 --image=nginx
+    
+    # scale the deployment
+    kubecl scale deployment nginx-deployment --replicas=3
+    
+    # expose the deployment
+    kubectl expose deployment nginx-deployment --port=80 --name=nginx-svc
+    
+    # use port-forwarding to forward traffice
+    kubectl port-forward svc nginx-svc :80
+    Forwarding from 127.0.0.1:42741 -> 80
+    Forwarding from [::1]:42741 -> 80
+    
+    # curl the site
+    curl 127.0.0.1:42741
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <title>Welcome to nginx!</title>
+    <style>
+    html { color-scheme: light dark; }
+    body { width: 35em; margin: 0 auto;
+    font-family: Tahoma, Verdana, Arial, sans-serif; }
+    </style>
+    </head>
+    <body>
+    <h1>Welcome to nginx!</h1>
+    <p>If you see this page, the nginx web server is successfully installed and
+    working. Further configuration is required.</p>
+    
+    <p>For online documentation and support please refer to
+    <a href="http://nginx.org/">nginx.org</a>.<br/>
+    Commercial support is available at
+    <a href="http://nginx.com/">nginx.com</a>.</p>
+    
+    <p><em>Thank you for using nginx.</em></p>
+    </body>
+    </html>
+    
     
     ```
 
-14. Get logs for a pod which has multiple containers running.
+    
 
-15. Deploy nginx with 3 replicas and then expose a port and use port forwarding to talk to a specific port.
+17. Create a service that uses an external load balancer and points to a 3 pod cluster running nginx.
 
-16. Create a service that uses an external load balancer and points to a 3 pod cluster running nginx.
+    ```sh
+    k expose deployment nginx-dep --port=80 --target-port=80 --name=nginx-svc --type=LoadBalancer
+    ```
 
 17. Get the status of all the master components.
 
-18. Create a pod that runs on a given node.
+    ```bash
+    vagrant@kubemaster:~/spec/question16$ k get componentstatus
+    Warning: v1 ComponentStatus is deprecated in v1.19+
+    NAME                 STATUS      MESSAGE                                                                                       ERROR
+    scheduler            Unhealthy   Get "http://127.0.0.1:10251/healthz": dial tcp 127.0.0.1:10251: connect: connection refused   
+    controller-manager   Healthy     ok                                                                                            
+    etcd-0               Healthy     {"health":"true","reason":""}                                                                 
+    vagrant@kubemaster:~/spec/question16$ k cluster-info
+    Kubernetes control plane is running at https://192.168.56.2:6443
+    CoreDNS is running at https://192.168.56.2:6443/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
+    ```
+
+19. Create a pod that runs on a given node.
+    *Refer to question 4*
 
 19. Create a pod that uses secrets.
+    
     1. Pull secrets from environment variable.
+    ```yaml
+    # create a secret
+	apiVersion: v1
+    kind: Secret
+    metadata:
+      name: mysecret
+    type: Opaque
+    data:
+      USER_NAME: YWRtaW4=
+      PASSWORD: MWYyZDFlMmU2N2Rm
+    ```
+    
+    Now create a Secret object.
+    
+    ```bash
+    k create -f secret.yaml 
+    ```
+    
+    Now create your pod.
+    
+    ```yaml
+    apiVersion: v1
+    kind: Pod
+    metadata:
+      creationTimestamp: null
+      labels:
+        run: pod-with-secret
+      name: pod-with-secret
+    spec:
+      containers:
+      - image: k8s.gcr.io/busybox
+        name: pod-with-secret
+        command: ["/bin/sh", "-c", "env"]
+        envFrom:
+        - secretRef:
+            name: mysecret
+        resources: {}
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+    status: {}
+    ```
+    
     2. Pull secrets from a volume.
+    
+       ```yaml
+       apiVersion: v1
+       kind: Pod
+       metadata:
+         name: secret-test-pod
+         labels:
+           name: secret-test
+       spec:
+         volumes:
+         - name: secret-volume
+           secret:
+             secretName: prod-db-secret
+         containers:
+         - name: ssh-test-container
+           image: busybox
+           command: [ "/bin/sh", "-c", "sleep 99999999" ]
+           volumeMounts:
+           - name: secret-volume
+             readOnly: true
+             mountPath: "/etc/secret-volume"
+       ```
+    
+       ```bash
+       k exec -it pod/secret-test-pod -- /bin/sh
+       > ls /etc/secret-volume -l
+       total 0
+       lrwxrwxrwx    1 root     root            15 Nov 21 15:08 password -> ..data/password
+       lrwxrwxrwx    1 root     root            15 Nov 21 15:08 username -> ..data/username
+       ```
+    
     3. Dump the secrets out via kubectl to show it worked.
+    
+       ```bash
+       echo $(k get secret prod-db-secret -o=jsonpath='{range .items[*]}{.data.username}') | base64 -d
+       ```
+    
 20. Create a static pod and then delete the pod.
+
+    ```bash
+    ```
+
+    
 
 21. Create a pod that do not get IP from the range of allocated CIDR block. Ensure that this is not a static pod.
 
 22. Create a service that uses a scratch disk.
     1. Change the service to mount a disk from the host. [Local-PV]
     2. Change the service to mount a persistent volume. [hostPath PV]
+    
 23. Create a service that manually requires endpoint creation - and create that too.
 
 24. Create a daemon set and change the update strategy to do a rolling update but delaying 30 seconds.
@@ -410,6 +603,7 @@
     2. Scale the service.
     3. Change it to use an external IP.
     4. Change it to use a load balancer.
+    
 31. Deploy nginx with 3 replicas and then expose a port and use port forwarding to talk to a specific port.
 
 32. Get logs for Kubernetes master components.
@@ -559,3 +753,9 @@
 48. Create a pod that by passes kube-scheduler. Ensure that this is not a static pod.
     - Add a `nodeSelector` field
     - Add `schedulerName` field
+
+https://medium.com/@sensri108/practice-examples-dumps-tips-for-cka-ckad-certified-kubernetes-administrator-exam-by-cncf-4826233ccc27
+
+https://devops.digit.org/hiring-devops/devops-hiring/exercise-2
+
+https://github.com/Kasunmadura/k8s/blob/master/cka-exam/README.md
