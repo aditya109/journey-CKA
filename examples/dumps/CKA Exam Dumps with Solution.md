@@ -574,15 +574,24 @@
 20. Create a static pod and then delete the pod.
 
     ```bash
+    kubectl run nginx-pod --image=nginx --port=80 --dry-run=client -oyaml > nginx-pod.yaml
+    sudo mv nginx-pod.yaml /etc/kubernetes/manifests # to create a static pod
+    
+    sudo rm -rf nginx-pod.yaml # to delete a static pod
     ```
 
     
 
-21. Create a pod that do not get IP from the range of allocated CIDR block. Ensure that this is not a static pod.
+21. *Create a pod that do not get IP from the range of allocated CIDR block. Ensure that this is not a static pod.
 
-22. Create a service that uses a scratch disk.
-    1. Change the service to mount a disk from the host. [Local-PV]
-    2. Change the service to mount a persistent volume. [hostPath PV]
+    ```sh
+    ```
+
+    
+
+22. Create a pod that uses a scratch disk.
+    1. Change the pod to mount a disk from the host. [Local-PV]
+    2. Change the pod to mount a persistent volume. [hostPath PV]
     
 23. Create a service that manually requires endpoint creation - and create that too.
 
@@ -661,7 +670,7 @@
 
 41. Add missing worker node -- TLS bootstrapping.
 
-42. Set up a Kubernetes cluster from scratch by using Kubeadm.
+42. Set up a Kubernetes cluster from scratch by using Kubeadm. [done]
 
 43. Create Redis pod without using PV.
 
