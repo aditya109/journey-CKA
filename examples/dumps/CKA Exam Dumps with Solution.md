@@ -459,10 +459,8 @@
     <p><em>Thank you for using nginx.</em></p>
     </body>
     </html>
-    
-    
     ```
-
+    
     
 
 17. Create a service that uses an external load balancer and points to a 3 pod cluster running nginx.
@@ -589,13 +587,150 @@
 
     
 
-22. Create a pod that uses a scratch disk.
+22. *Create a pod that uses a scratch disk.
+    
     1. Change the pod to mount a disk from the host. [Local-PV]
+    
+       ```bash
+       # create a storage class -- local-sc.yaml
+       cat > local-sc.yaml << EOF
+       apiVersion: storage.k8s.io/v1
+       kind: StorageClass
+       metadata:
+         creationTimestamp: "2021-11-23T17:04:14Z"
+         name: local-storage
+         resourceVersion: "53490"
+         uid: 4c64dd7a-5f85-47e6-8ad2-9f1ea66557a9
+       provisioner: kubernetes.io/no-provisioner
+       reclaimPolicy: Delete
+       volumeBindingMode: WaitForFirstConsumer
+       EOF 
+       
+       # create the storage class
+       kubectl create -f local-sc.yaml
+       
+       # create local pv -- local-pv.yaml
+       cat > local-pv.yaml << EOF
+       apiVersion: v1
+       items:
+       - apiVersion: v1
+         kind: PersistentVolume
+         metadata:
+           creationTimestamp: "2021-11-23T17:02:50Z"
+           finalizers:
+           - kubernetes.io/pv-protection
+           name: my-local-pv
+           resourceVersion: "53374"
+           uid: 07b8b57b-b3ca-4842-af71-050261687b75
+         spec:
+           accessModes:
+           - ReadWriteOnce
+           capacity:
+             storage: 10Mi
+           local:
+             path: /mnt/disks/vol1
+           nodeAffinity:
+             required:
+               nodeSelectorTerms:
+               - matchExpressions:
+                 - key: kubernetes.io/hostname
+                   operator: In
+                   values:
+                   - kubenode01
+           persistentVolumeReclaimPolicy: Delete
+           storageClassName: local-storage
+           volumeMode: Filesystem
+         status:
+           phase: Available
+       kind: List
+       metadata:
+         resourceVersion: ""
+         selfLink: ""
+       EOF
+       
+       # create local pv
+       kubectl create -f local-pv.yaml
+       
+       
+       ```
+    
+       https://vocon-it.com/2018/12/20/kubernetes-local-persistent-volumes/#Step_1_Create_StorageClass_with_WaitForFirstConsumer_Binding_Mode
+    
+       
+    
     2. Change the pod to mount a persistent volume. [hostPath PV]
     
-23. Create a service that manually requires endpoint creation - and create that too.
-
+23. Create a service that manually requires endpoint creation - and create that too. 
+    
+    For this we create a service without a selector, when such a service is created, the coreresponding endpoint object is not created automatically. We then manually map the service to the network address and port where it's running, by adding an endpoint object manually.
+    
+    ```bash
+    # create svc.yaml 
+    apiVersion: v1
+    kind: Service
+    metadata:
+      name: my-service
+    spec:
+      ports:
+        - protocol: TCP
+          port: 80
+          targetPort: 9376
+    
+    # create my-service service object
+    kubectl create -f svc.yaml
+    
+    # create ep.yaml
+    apiVersion: v1
+    kind: Endpoints
+    metadata:
+      name: my-service
+    subsets:
+      - addresses:
+          - ip: 192.0.2.42
+        ports:
+          - port: 9376
+    
+    # create endpoint object
+    kubectl create -f ep.yaml
+    
+    # describing my-service endpoint
+    k describe endpoints my-service
+    Name:         my-service
+    Namespace:    default
+    Labels:       <none>
+    Annotations:  <none>
+    Subsets:
+      Addresses:          192.0.2.42
+      NotReadyAddresses:  <none>
+      Ports:
+        Name     Port  Protocol
+        ----     ----  --------
+        <unset>  9376  TCP
+    
+    # describing my-service service
+    k describe svc my-service
+    Name:              my-service
+    Namespace:         default
+    Labels:            <none>
+    Annotations:       <none>
+    Selector:          <none>
+    Type:              ClusterIP
+    IP Family Policy:  SingleStack
+    IP Families:       IPv4
+    IP:                10.100.100.225
+    IPs:               10.100.100.225
+    Port:              <unset>  80/TCP
+    TargetPort:        9376/TCP
+    Endpoints:         192.0.2.42:9376
+    Session Affinity:  None
+    Events:            <none>
+    ```
+    
+    
+    
 24. Create a daemon set and change the update strategy to do a rolling update but delaying 30 seconds.
+
+    
 
 25. Create a horizontal autoscaling group that starts with 2 pods and scales when CPU usage is over 50%.
 
