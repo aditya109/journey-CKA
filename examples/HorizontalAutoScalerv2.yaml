@@ -1,0 +1,27 @@
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: hpa-resource-metrics-memory
+  namespace: default
+spec:
+  behavior:
+    scaleDown: 
+      policies: 
+      - type: Pods 
+        value: 4 
+        periodSeconds: 60 
+      - type: Percent
+        value: 10 
+        periodSeconds: 60
+      selectPolicy: Min 
+      stabilizationWindowSeconds: 300 
+    scaleUp: 
+      policies:
+      - type: Pods
+        value: 5 
+        periodSeconds: 70
+      - type: Percent
+        value: 12 
+        periodSeconds: 80
+      selectPolicy: Max
+      stabilizationWindowSeconds: 0

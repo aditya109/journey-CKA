@@ -730,9 +730,206 @@
     
 24. Create a daemon set and change the update strategy to do a rolling update but delaying 30 seconds.
 
+    Use initContainers to cause a delay.
+
+    ```bash
+    cat > daemonset.yaml << EOF
+    # create a daemon set with OnDelete strategy and image with older version
+    # without init container for delay
+    apiVersion: apps/v1
+    kind: DaemonSet
+    metadata:
+      name: fluentd-elasticsearch
+      namespace: default
+      labels:
+        k8s-app: fluentd-logging
+    spec:
+      selector:
+        matchLabels:
+          name: fluentd-elasticsearch
+      updateStrategy: OnDelete
+      template:
+        metadata:
+          labels:
+            name: fluentd-elasticsearch
+        spec:
+          tolerations:
+          # this toleration is to have the daemonset runnable on master nodes
+          # remove it if your masters can't run pods
+          - key: node-role.kubernetes.io/master
+            operator: Exists
+            effect: NoSchedule
+          containers:
+          - name: fluentd-elasticsearch
+            image: quay.io/fluentd_elasticsearch/fluentd:v2.5.2
+            resources:
+              limits:
+                memory: 200Mi
+              requests:
+                cpu: 100m
+                memory: 200Mi
+            volumeMounts:
+            - name: varlog
+              mountPath: /var/log
+            - name: varlibdockercontainers
+              mountPath: /var/lib/docker/containers
+              readOnly: true
+          terminationGracePeriodSeconds: 30
+          volumes:
+          - name: varlog
+            hostPath:
+              path: /var/log
+          - name: varlibdockercontainers
+            hostPath:
+              path: /var/lib/docker/containers
+    
+    # create the daemonset 
+    kubectl create -f daemonset.yaml
+    
+    # edit the daemonset yaml 
+    # change the strategy and init container for delay
+    apiVersion: apps/v1
+    kind: DaemonSet
+    metadata:
+      name: fluentd-elasticsearch
+      namespace: default
+      labels:
+        k8s-app: fluentd-logging
+    spec:
+      selector:
+        matchLabels:
+          name: fluentd-elasticsearch
+      
+      updateStrategy:
+        type: RollingUpdate
+        rollingUpdate:
+          maxUnavailable: 1
+      template:
+        metadata:
+          labels:
+            name: fluentd-elasticsearch
+        spec:
+          tolerations:
+          # this toleration is to have the daemonset runnable on master nodes
+          # remove it if your masters can't run pods
+          - key: node-role.kubernetes.io/master
+            operator: Exists
+            effect: NoSchedule
+          initContainers:
+          - name: init-myservice
+            image: busybox:1.28
+            command: ['sh', '-c', "sleep 30"]
+          containers:
+          - name: fluentd-elasticsearch
+            image: quay.io/fluentd_elasticsearch/fluentd:v3.3.0
+            resources:
+              limits:
+                memory: 200Mi
+              requests:
+                cpu: 100m
+                memory: 200Mi
+            volumeMounts:
+            - name: varlog
+              mountPath: /var/log
+            - name: varlibdockercontainers
+              mountPath: /var/lib/docker/containers
+              readOnly: true
+          terminationGracePeriodSeconds: 30
+          volumes:
+          - name: varlog
+            hostPath:
+              path: /var/log
+          - name: varlibdockercontainers
+            hostPath:
+              path: /var/lib/docker/containers
+    
+    # apply the changes yaml
+    kubectl apply -f daemonset.yaml
+    ```
+
     
 
 25. Create a horizontal autoscaling group that starts with 2 pods and scales when CPU usage is over 50%.
+
+    ```
+    desiredReplicas = ceil[currentReplicas * ( currentMetricValue / desiredMetricValue )]
+    ```
+
+    For me the autoscaler was not working as the metrics server was not deployed.
+    So I deployed the same.
+
+    ```bash
+    # deploy metrics server
+    wget https://github.com/kubernetes-sigs/metrics-server/releases/download/metrics-server-helm-chart-3.7.0/components.yaml
+    
+    # add the following in the command section of the deployment 
+    # skip if already there
+    
+    	- args:
+            - --cert-dir=/tmp
+            - --secure-port=4443
+            - --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname
+            - --kubelet-use-node-status-port
+            - --metric-resolution=15s
+            - --kubelet-insecure-tls
+    # deploy the metrics server manifest
+    kubectl create -f components.yaml
+    
+    # cat > sample-app.yaml <<EOF
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: php-apache
+    spec:
+      selector:
+        matchLabels:
+          run: php-apache
+      replicas: 1
+      template:
+        metadata:
+          labels:
+            run: php-apache
+        spec:
+          containers:
+          - name: php-apache
+            image: k8s.gcr.io/hpa-example
+            ports:
+            - containerPort: 80
+            resources:
+              limits:
+                cpu: 500m
+              requests:
+                cpu: 200m
+    ---
+    apiVersion: v1
+    kind: Service
+    metadata:
+      name: php-apache
+      labels:
+        run: php-apache
+    spec:
+      ports:
+      - port: 80
+      selector:
+        run: php-apache
+    
+    # we put an autoscaler
+    kubectl autoscale deployment php-apache --cpu-percent=50 --min=2 --max=10
+    
+    # get pods
+    k get hpa
+    NAME         REFERENCE               TARGETS   MINPODS   MAXPODS   REPLICAS   AGE
+    php-apache   Deployment/php-apache   0%/50%    2         10        2          73s
+    
+    # simulate load addition
+    kubectl run -i --tty load-generator --rm --image=busybox --restart=Never -- /bin/sh -c "while sleep 0.01; do wget -q -O- http://php-apache; done"
+    
+    # watch your pods autoscaler
+    watch kubectl get pods -A
+    
+    ```
+
+    
 
 26. Create a custom resource definition and display it in the API with cURL.
 
