@@ -46,14 +46,32 @@
 
    ```sh
    # sorting pv by name
-   kubectl get pv --sort-by=.metadata.name
+   kubectl get pv --sort-by=.m# Custom Resource Definitions and Custom Resources
+   
+   In order to create a new type of resources, we use CRDs.
+   
+   When we query about a resource, custom or not, API server first finds it in the `aggragated ` layer, then in `kubernetes native resources`, and last in `API extensions`.
+   
+   etadata.name
    NAME              CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS      CLAIM   STORAGECLASS   REASON   AGE
    ruby-pv-volume    78Mi       RWO            Retain           Available           manual                  2m11s
    talex-pv-volume   52Mi       RWO            Retain           Available           manual                  2m11s
    ```
 
    ```sh
-   # sorting pv by size
+   # sorting pv by size# Custom Resource Definitions and Custom Resources
+   
+   In order to create a new type of resources, we use CRDs.
+   
+   When we query about a resource, custom or not, API server first finds it in the `aggragated ` layer, then in `kubernetes native resources`, and last in `API extensions`.
+   
+   # Custom Resource Definitions and Custom Resources
+   
+   In order to create a new type of resources, we use CRDs.
+   
+   When we query about a resource, custom or not, API server first finds it in the `aggragated ` layer, then in `kubernetes native resources`, and last in `API extensions`.
+   
+   
    kubectl get pv --sort-by=.spec.capacity.storage
    NAME              CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS      CLAIM   STORAGECLASS   REASON   AGE
    talex-pv-volume   52Mi       RWO            Retain           Available           manual                  15s
@@ -70,7 +88,13 @@
    kubectl taint nodes node1 nodeEffect=unput:NoSchedule
    ```
 
-3. kubectl command failing with error - `The connection to the server localhost:8080 was refused - did you specify the right host or port?`. Fix it.
+3. kubectl command failing with errCustom Resource Definitions and Custom Resources
+
+   In order to create a new type of resources, we use CRDs.
+
+   When we query about a resource, custom or not, API server first finds it in the `aggragated ` layer, then in `kubernetes native resources`, and last in `API extensions`.
+
+3. or - `The connection to the server localhost:8080 was refused - did you specify the right host or port?`. Fix it.
 
    - Browse through the `/etcd/kubernetes/manifests/kube-apiserver.yaml`.
 
@@ -931,45 +955,117 @@
 
     
 
-26. Create a custom resource definition and display it in the API with cURL.
+27. Create a custom resource definition and display it in the API with cURL.
 
-27. Create a service that references an externalname and test that this works from another pod.
+    # Custom Resource Definitions and Custom Resources
 
-28. Create a pod that runs all processes as user 1000.
+    In order to create a new type of resources, we use CRDs.
 
-29. Write an ingress rule that redirects calls to `/foo` to one service and to `/bar` to another.
+    When we query about a resource, custom or not, API server first finds it in the `aggragated ` layer, then in `kubernetes native resources`, and last in `API extensions`.
 
-30. Write a service that exposes nginx on a nodeport.
-    1. Change it to use a cluster port.
-    2. Scale the service.
-    3. Change it to use an external IP.
-    4. Change it to use a load balancer.
+    ```bash
+    # create crd manifest
     
-31. Deploy nginx with 3 replicas and then expose a port and use port forwarding to talk to a specific port.
+    cat > crd.yaml << EOF
+    > apiVersion: apiextensions.k8s.io/v1
+    > kind: CustomResourceDefinition
+    > metadata:
+    >   # name must match the spec fields below, and be in the form: <plural>.<group>
+    >   name: crontabs.stable.example.com
+    > spec:
+    >   # group name to use for REST API: /apis/<group>/<version>
+    >   group: stable.example.com
+    >   # list of versions supported by this CustomResourceDefinition
+    >   versions:
+    >     - name: v1
+    >       # Each version can be enabled/disabled by Served flag.
+    >       served: true
+    >       # One and only one version must be marked as the storage version.
+    >       storage: true
+    >       schema:
+    >         openAPIV3Schema:
+    >           type: object
+    >           properties:
+    >             spec:
+    >               type: object
+    >               properties:
+    >                 cronSpec:
+    >                   type: string
+    >                 image:
+    >                   type: string
+    >                 replicas:
+    >                   type: integer
+    >   # either Namespaced or Cluster
+    >   scope: Namespaced
+    >   names:
+    >     # plural name to be used in the URL: /apis/<group>/<version>/<plural>
+    >     plural: crontabs
+    >     # singular name to be used as an alias on the CLI and for display
+    >     singular: crontab
+    >     # kind is normally the CamelCased singular type. Your resource manifests use this.
+    >     kind: CronTab
+    >     # shortNames allow shorter string to match your resource on the CLI
+    >     shortNames:
+    >     - ct
+    > EOF
+    
+    # register crd api
+    kubectl create -f crd.yaml
+    
+    # find in using API server
+    # start proxy on one session
+    kubectl proxy
+    
+    # on another session 
+    curl http://localhost:8001/apis/stable.example.com/v1/crontabs
+    
+    # OR use kubectl directly
+    kubectl get crontabs
+    ```
 
-32. Get logs for Kubernetes master components.
+28. Create a service that references an externalname and test that this works from another pod.
 
-33. Get logs for Kubelet.
+    An **ExternalName Service** is a special case of Service that does not have selectors and uses DNS names instead. 
 
-34. Backup an etcd cluster.
+    
 
-35. List the members of an etcd cluster.
+29. 
 
-36. Find the health of etcd.
+1. Create a pod that runs all processes as user 1000.
 
-37. Create a namespace [Important]
+2. Write an ingress rule that redirects calls to `/foo` to one service and to `/bar` to another.
+
+3. Write a service that exposes nginx on a nodeport.
+   1. Change it to use a cluster port.
+   2. Scale the service.
+   3. Change it to use an external IP.
+   4. Change it to use a load balancer.
+
+4. Deploy nginx with 3 replicas and then expose a port and use port forwarding to talk to a specific port.
+
+5. Get logs for Kubernetes master components.
+
+6. Get logs for Kubelet.
+
+7. Backup an etcd cluster.
+
+8. List the members of an etcd cluster.
+
+9. Find the health of etcd.
+
+10. Create a namespace [Important]
 
     1. Run a pod in the new namespace.
     2. Put memory limits on the namespace.
     3. Limit pods to 2 persistent volumes in this namespace
 
-38. Create a networking policy such that only pods with the label access=granted can talk to it.
+11. Create a networking policy such that only pods with the label access=granted can talk to it.
 
     1. Create an nginx pod and attach this policy to it.
     2. Create a busybox pod and attempt to talk to nginx - should be blocked.
     3. Attach the label to busybox and try again - should be allowed.
 
-39. Create a multi containers of `nginx`, `redis` and `consul`.
+12. Create a multi containers of `nginx`, `redis` and `consul`.
 
     ```yaml
     kind: Pod
@@ -998,13 +1094,13 @@
     status: {}
     ```
 
-40. Troubleshooting not ready state node.
+13. Troubleshooting not ready state node.
 
-41. Add missing worker node -- TLS bootstrapping.
+14. Add missing worker node -- TLS bootstrapping.
 
-42. Set up a Kubernetes cluster from scratch by using Kubeadm. [done]
+15. Set up a Kubernetes cluster from scratch by using Kubeadm. [done]
 
-43. Create Redis pod without using PV.
+16. Create Redis pod without using PV.
 
     ```yaml
     apiVersion: v1
@@ -1023,7 +1119,7 @@
           emptyDir: {}
     ```
 
-44. Creating PVolume with host path.
+17. Creating PVolume with host path.
 
     ```yaml
     apiVersion: v1
@@ -1042,13 +1138,13 @@
         path: "/mnt/data"
     ```
 
-45. Create pods,service in particular namespace, list all services in particular namespace.
+18. Create pods,service in particular namespace, list all services in particular namespace.
 
     ```sh
     kubectl get svc -n NAMESPACE_NAME
     ```
 
-46. Create nginx deployment nginx-random expose it; then create another pod busybox and do the following:
+19. Create nginx deployment nginx-random expose it; then create another pod busybox and do the following:
 
     1. Dnlookup service
     2. Dnslookup pod
@@ -1078,20 +1174,20 @@
     ```sh
     kubectl create -f my-nginx.yaml
     kubectl expose deployment/my-nginx
-
+    
     kubectl run curl --image=radial/busyboxplus:curl -i --tty
     kubectl exec -it curl -- sh
     nslookup my-nginx
     nslookup my-nginx-5b56ccd65f-9nrh6
     ```
 
-47. Expose a service to Nodeport. Edit the yaml.
+20. Expose a service to Nodeport. Edit the yaml.
 
     ```sh
     kubectl expose service nginx --port=443 --target-port=8443 --name=nginx-https --type=NodePort --dry-run=client -oyaml > nginx-np.yaml
     ```
 
-48. Create a pod that by passes kube-scheduler. Ensure that this is not a static pod.
+21. Create a pod that by passes kube-scheduler. Ensure that this is not a static pod.
     - Add a `nodeSelector` field
     - Add `schedulerName` field
 
