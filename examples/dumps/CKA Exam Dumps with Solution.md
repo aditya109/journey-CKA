@@ -1,8 +1,6 @@
 1. List your `PersistentVolume` by `Name`, `Size`.
 
    ```yaml
-   
-   
    # first let's create PersistentVolumes
    # pv-volume.yaml
    ---
@@ -47,11 +45,11 @@
    ```sh
    # sorting pv by name
    kubectl get pv --sort-by=.m# Custom Resource Definitions and Custom Resources
-   
+
    In order to create a new type of resources, we use CRDs.
-   
+
    When we query about a resource, custom or not, API server first finds it in the `aggragated ` layer, then in `kubernetes native resources`, and last in `API extensions`.
-   
+
    etadata.name
    NAME              CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS      CLAIM   STORAGECLASS   REASON   AGE
    ruby-pv-volume    78Mi       RWO            Retain           Available           manual                  2m11s
@@ -60,18 +58,18 @@
 
    ```sh
    # sorting pv by size# Custom Resource Definitions and Custom Resources
-   
+
    In order to create a new type of resources, we use CRDs.
-   
+
    When we query about a resource, custom or not, API server first finds it in the `aggragated ` layer, then in `kubernetes native resources`, and last in `API extensions`.
-   
+
    # Custom Resource Definitions and Custom Resources
-   
+
    In order to create a new type of resources, we use CRDs.
-   
+
    When we query about a resource, custom or not, API server first finds it in the `aggragated ` layer, then in `kubernetes native resources`, and last in `API extensions`.
-   
-   
+
+
    kubectl get pv --sort-by=.spec.capacity.storage
    NAME              CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS      CLAIM   STORAGECLASS   REASON   AGE
    talex-pv-volume   52Mi       RWO            Retain           Available           manual                  15s
@@ -92,13 +90,13 @@
 
    In order to create a new type of resources, we use CRDs.
 
-   When we query about a resource, custom or not, API server first finds it in the `aggragated ` layer, then in `kubernetes native resources`, and last in `API extensions`.
+   When we query about a resource, custom or not, API server first finds it in the `aggragated` layer, then in `kubernetes native resources`, and last in `API extensions`.
 
-3. or - `The connection to the server localhost:8080 was refused - did you specify the right host or port?`. Fix it.
+4. or - `The connection to the server localhost:8080 was refused - did you specify the right host or port?`. Fix it.
 
    - Browse through the `/etcd/kubernetes/manifests/kube-apiserver.yaml`.
 
-4. Create 2 pods -- `mypod1` and `mypod2` , `mypod2` should be scheduled to run anywhere `mypod1` is running.
+5. Create 2 pods -- `mypod1` and `mypod2` , `mypod2` should be scheduled to run anywhere `mypod1` is running.
 
    - We can label a node.
 
@@ -160,7 +158,7 @@
      status: {}
      ```
 
-5. Questions on `initContainers`:
+6. Questions on `initContainers`:
 
    1. A container will start only if a file is present.
 
@@ -194,7 +192,7 @@
             emptyDir: {}
       ```
 
-6. Create a deployment running nginx version 1.12.2 that will run in 2 pods.
+7. Create a deployment running nginx version 1.12.2 that will run in 2 pods.
 
    ```sh
    kubectl create deployment nginx-dep --image=nginx:1.12.2 --replicas=2
@@ -255,8 +253,8 @@
       deployment.apps/nginx-dep rolled back
       ```
 
-7. Create a pod that has a liveness check.
-   
+8. Create a pod that has a liveness check.
+
    ```yaml
    apiVersion: v1
    kind: Pod
@@ -280,8 +278,8 @@
            initialDelaySeconds: 5
            periodSeconds: 5
    ```
-   
-8. Create a pod that has a readiness check.
+
+9. Create a pod that has a readiness check.
 
    ```yaml
    apiVersion: v1
@@ -307,18 +305,18 @@
            periodSeconds: 5
    ```
 
-9. Create a busybox container without a manifest. Then edit the manifest.
+10. Create a busybox container without a manifest. Then edit the manifest.
 
-   ```sh
-   kubectl run busybox-without-manifest --image=busybox
-   kubectl edit pod busybox-without-manifest
+    ```sh
+    kubectl run busybox-without-manifest --image=busybox
+    kubectl edit pod busybox-without-manifest
 
-   ---OR---
-   kubectl get pod busybox-without-manifest -oyaml > busybox-without-manifest.yaml
-   vi busybox-without-manifest.yaml
-   ```
+    ---OR---
+    kubectl get pod busybox-without-manifest -oyaml > busybox-without-manifest.yaml
+    vi busybox-without-manifest.yaml
+    ```
 
-10. Create a job that runs every 3 minutes and prints out the current time.
+11. Create a job that runs every 3 minutes and prints out the current time.
 
     ```yaml
     kind: CronJob
@@ -390,44 +388,44 @@
     ```
 
     ```sh
-    for i in $(kubectl get pods -l "job-name=q11" | cut -d" " -f1); do if [ $i != "NAME" ]; then kubectl logs $i --all-containers=true; fi; done; 
+    for i in $(kubectl get pods -l "job-name=q11" | cut -d" " -f1); do if [ $i != "NAME" ]; then kubectl logs $i --all-containers=true; fi; done;
     # each new line ends in a semi colon
     ```
 
-12. Get the list of pod by doing a CURL to the kube-apiserver.
+13. Get the list of pod by doing a CURL to the kube-apiserver.
 
     - ```sh
       kubectl proxy
       curl -X GET http://127.0.0.1:8001/api/v1/namespaces/default/pods
       ```
-      
+    -
     - ```sh
       # create a service account
       kubectl create sa podsa
-      
+
       # create a clusterrole
       kubectl create clusterrole podcr --verb=get --verb=watch --verb=list --resource=pods
-      
+
       # create a rolebinding
       create rolebinding podsa:podcr --clusterrole=podcr --serviceaccount=default:podsa
-      
+
       # get url of kube-apiserver endpoint
       kubectl get endpoints
       API_SERVER=192.168.49.2:8443
-      
+
       # get secret of your sa
       k describe secret podsa-token-n48xb -oyaml
-      
+
       # base64 decode your ca.crt and store it in ca.crt
       echo LS0tLS1CRUdJ.....tLS0tCg== | base64 -d > ca.crt
-      
+
       # base64 decode your ca.crt and store it in TOKEN variable
       TOKEN=$(echo LS0tLS1CRUdJ.....tLS0tCg== | base64 -d)
-      
+
       curl -s GET $API_SERVER/api/v1/namespaces/default/pods --header "Authorization: Bearer $TOKEN" --cacert ca.crt
       ```
-    
-13. Deploy a pod with the wrong image name (like --image=nginy) and find the error message.
+
+14. Deploy a pod with the wrong image name (like --image=nginy) and find the error message.
 
     ```sh
     kubectl create ns app
@@ -446,18 +444,18 @@
     ```bash
     # create basic nginx deployment
     kubectl create deployment nginx-deployment --port=80 --image=nginx
-    
+
     # scale the deployment
     kubecl scale deployment nginx-deployment --replicas=3
-    
+
     # expose the deployment
     kubectl expose deployment nginx-deployment --port=80 --name=nginx-svc
-    
+
     # use port-forwarding to forward traffice
     kubectl port-forward svc nginx-svc :80
     Forwarding from 127.0.0.1:42741 -> 80
     Forwarding from [::1]:42741 -> 80
-    
+
     # curl the site
     curl 127.0.0.1:42741
     <!DOCTYPE html>
@@ -474,18 +472,16 @@
     <h1>Welcome to nginx!</h1>
     <p>If you see this page, the nginx web server is successfully installed and
     working. Further configuration is required.</p>
-    
+
     <p>For online documentation and support please refer to
     <a href="http://nginx.org/">nginx.org</a>.<br/>
     Commercial support is available at
     <a href="http://nginx.com/">nginx.com</a>.</p>
-    
+
     <p><em>Thank you for using nginx.</em></p>
     </body>
     </html>
     ```
-    
-    
 
 17. Create a service that uses an external load balancer and points to a 3 pod cluster running nginx.
 
@@ -493,29 +489,30 @@
     k expose deployment nginx-dep --port=80 --target-port=80 --name=nginx-svc --type=LoadBalancer
     ```
 
-17. Get the status of all the master components.
+18. Get the status of all the master components.
 
     ```bash
     vagrant@kubemaster:~/spec/question16$ k get componentstatus
     Warning: v1 ComponentStatus is deprecated in v1.19+
     NAME                 STATUS      MESSAGE                                                                                       ERROR
-    scheduler            Unhealthy   Get "http://127.0.0.1:10251/healthz": dial tcp 127.0.0.1:10251: connect: connection refused   
-    controller-manager   Healthy     ok                                                                                            
-    etcd-0               Healthy     {"health":"true","reason":""}                                                                 
+    scheduler            Unhealthy   Get "http://127.0.0.1:10251/healthz": dial tcp 127.0.0.1:10251: connect: connection refused
+    controller-manager   Healthy     ok
+    etcd-0               Healthy     {"health":"true","reason":""}
     vagrant@kubemaster:~/spec/question16$ k cluster-info
     Kubernetes control plane is running at https://192.168.56.2:6443
     CoreDNS is running at https://192.168.56.2:6443/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
     ```
 
 19. Create a pod that runs on a given node.
-    *Refer to question 4*
+    _Refer to question 4_
 
-19. Create a pod that uses secrets.
-    
+20. Create a pod that uses secrets.
+
     1. Pull secrets from environment variable.
+
     ```yaml
     # create a secret
-	apiVersion: v1
+    apiVersion: v1
     kind: Secret
     metadata:
       name: mysecret
@@ -524,15 +521,15 @@
       USER_NAME: YWRtaW4=
       PASSWORD: MWYyZDFlMmU2N2Rm
     ```
-    
+
     Now create a Secret object.
-    
+
     ```bash
-    k create -f secret.yaml 
+    k create -f secret.yaml
     ```
-    
+
     Now create your pod.
-    
+
     ```yaml
     apiVersion: v1
     kind: Pod
@@ -543,20 +540,20 @@
       name: pod-with-secret
     spec:
       containers:
-      - image: k8s.gcr.io/busybox
-        name: pod-with-secret
-        command: ["/bin/sh", "-c", "env"]
-        envFrom:
-        - secretRef:
-            name: mysecret
-        resources: {}
+        - image: k8s.gcr.io/busybox
+          name: pod-with-secret
+          command: ["/bin/sh", "-c", "env"]
+          envFrom:
+            - secretRef:
+                name: mysecret
+          resources: {}
       dnsPolicy: ClusterFirst
       restartPolicy: Always
     status: {}
     ```
-    
+
     2. Pull secrets from a volume.
-    
+
        ```yaml
        apiVersion: v1
        kind: Pod
@@ -566,19 +563,19 @@
            name: secret-test
        spec:
          volumes:
-         - name: secret-volume
-           secret:
-             secretName: prod-db-secret
-         containers:
-         - name: ssh-test-container
-           image: busybox
-           command: [ "/bin/sh", "-c", "sleep 99999999" ]
-           volumeMounts:
            - name: secret-volume
-             readOnly: true
-             mountPath: "/etc/secret-volume"
+             secret:
+               secretName: prod-db-secret
+         containers:
+           - name: ssh-test-container
+             image: busybox
+             command: ["/bin/sh", "-c", "sleep 99999999"]
+             volumeMounts:
+               - name: secret-volume
+                 readOnly: true
+                 mountPath: "/etc/secret-volume"
        ```
-    
+
        ```bash
        k exec -it pod/secret-test-pod -- /bin/sh
        > ls /etc/secret-volume -l
@@ -586,35 +583,32 @@
        lrwxrwxrwx    1 root     root            15 Nov 21 15:08 password -> ..data/password
        lrwxrwxrwx    1 root     root            15 Nov 21 15:08 username -> ..data/username
        ```
-    
+
     3. Dump the secrets out via kubectl to show it worked.
-    
+
        ```bash
        echo $(k get secret prod-db-secret -o=jsonpath='{range .items[*]}{.data.username}') | base64 -d
        ```
-    
-20. Create a static pod and then delete the pod.
+
+21. Create a static pod and then delete the pod.
 
     ```bash
     kubectl run nginx-pod --image=nginx --port=80 --dry-run=client -oyaml > nginx-pod.yaml
     sudo mv nginx-pod.yaml /etc/kubernetes/manifests # to create a static pod
-    
+
     sudo rm -rf nginx-pod.yaml # to delete a static pod
     ```
 
-    
-
-21. *Create a pod that do not get IP from the range of allocated CIDR block. Ensure that this is not a static pod.
+22. \*Create a pod that do not get IP from the range of allocated CIDR block. Ensure that this is not a static pod.
 
     ```sh
+
     ```
 
-    
+23. \*Create a pod that uses a scratch disk.
 
-22. *Create a pod that uses a scratch disk.
-    
     1. Change the pod to mount a disk from the host. [Local-PV]
-    
+
        ```bash
        # create a storage class -- local-sc.yaml
        cat > local-sc.yaml << EOF
@@ -628,11 +622,11 @@
        provisioner: kubernetes.io/no-provisioner
        reclaimPolicy: Delete
        volumeBindingMode: WaitForFirstConsumer
-       EOF 
-       
+       EOF
+
        # create the storage class
        kubectl create -f local-sc.yaml
-       
+
        # create local pv -- local-pv.yaml
        cat > local-pv.yaml << EOF
        apiVersion: v1
@@ -671,25 +665,23 @@
          resourceVersion: ""
          selfLink: ""
        EOF
-       
+
        # create local pv
        kubectl create -f local-pv.yaml
-       
-       
+
+
        ```
-    
-       https://vocon-it.com/2018/12/20/kubernetes-local-persistent-volumes/#Step_1_Create_StorageClass_with_WaitForFirstConsumer_Binding_Mode
-    
-       
-    
+
+       <https://vocon-it.com/2018/12/20/kubernetes-local-persistent-volumes/#Step_1_Create_StorageClass_with_WaitForFirstConsumer_Binding_Mode>
+
     2. Change the pod to mount a persistent volume. [hostPath PV]
-    
-23. Create a service that manually requires endpoint creation - and create that too. 
-    
+
+24. Create a service that manually requires endpoint creation - and create that too.
+
     For this we create a service without a selector, when such a service is created, the coreresponding endpoint object is not created automatically. We then manually map the service to the network address and port where it's running, by adding an endpoint object manually.
-    
+
     ```bash
-    # create svc.yaml 
+    # create svc.yaml
     apiVersion: v1
     kind: Service
     metadata:
@@ -699,10 +691,10 @@
         - protocol: TCP
           port: 80
           targetPort: 9376
-    
+
     # create my-service service object
     kubectl create -f svc.yaml
-    
+
     # create ep.yaml
     apiVersion: v1
     kind: Endpoints
@@ -713,10 +705,10 @@
           - ip: 192.0.2.42
         ports:
           - port: 9376
-    
+
     # create endpoint object
     kubectl create -f ep.yaml
-    
+
     # describing my-service endpoint
     k describe endpoints my-service
     Name:         my-service
@@ -730,7 +722,7 @@
         Name     Port  Protocol
         ----     ----  --------
         <unset>  9376  TCP
-    
+
     # describing my-service service
     k describe svc my-service
     Name:              my-service
@@ -749,10 +741,8 @@
     Session Affinity:  None
     Events:            <none>
     ```
-    
-    
-    
-24. Create a daemon set and change the update strategy to do a rolling update but delaying 30 seconds.
+
+25. Create a daemon set and change the update strategy to do a rolling update but delaying 30 seconds.
 
     Use initContainers to cause a delay.
 
@@ -806,11 +796,11 @@
           - name: varlibdockercontainers
             hostPath:
               path: /var/lib/docker/containers
-    
-    # create the daemonset 
+      EOF
+    # create the daemonset
     kubectl create -f daemonset.yaml
-    
-    # edit the daemonset yaml 
+
+    # edit the daemonset yaml
     # change the strategy and init container for delay
     apiVersion: apps/v1
     kind: DaemonSet
@@ -823,7 +813,7 @@
       selector:
         matchLabels:
           name: fluentd-elasticsearch
-      
+
       updateStrategy:
         type: RollingUpdate
         rollingUpdate:
@@ -866,14 +856,12 @@
           - name: varlibdockercontainers
             hostPath:
               path: /var/lib/docker/containers
-    
+
     # apply the changes yaml
     kubectl apply -f daemonset.yaml
     ```
 
-    
-
-25. Create a horizontal autoscaling group that starts with 2 pods and scales when CPU usage is over 50%.
+26. Create a horizontal autoscaling group that starts with 2 pods and scales when CPU usage is over 50%.
 
     ```
     desiredReplicas = ceil[currentReplicas * ( currentMetricValue / desiredMetricValue )]
@@ -885,11 +873,11 @@
     ```bash
     # deploy metrics server
     wget https://github.com/kubernetes-sigs/metrics-server/releases/download/metrics-server-helm-chart-3.7.0/components.yaml
-    
-    # add the following in the command section of the deployment 
+
+    # add the following in the command section of the deployment
     # skip if already there
-    
-    	- args:
+
+     - args:
             - --cert-dir=/tmp
             - --secure-port=4443
             - --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname
@@ -898,7 +886,7 @@
             - --kubelet-insecure-tls
     # deploy the metrics server manifest
     kubectl create -f components.yaml
-    
+
     # cat > sample-app.yaml <<EOF
     apiVersion: apps/v1
     kind: Deployment
@@ -936,24 +924,22 @@
       - port: 80
       selector:
         run: php-apache
-    
+
     # we put an autoscaler
     kubectl autoscale deployment php-apache --cpu-percent=50 --min=2 --max=10
-    
+
     # get pods
     k get hpa
     NAME         REFERENCE               TARGETS   MINPODS   MAXPODS   REPLICAS   AGE
     php-apache   Deployment/php-apache   0%/50%    2         10        2          73s
-    
+
     # simulate load addition
     kubectl run -i --tty load-generator --rm --image=busybox --restart=Never -- /bin/sh -c "while sleep 0.01; do wget -q -O- http://php-apache; done"
-    
+
     # watch your pods autoscaler
     watch kubectl get pods -A
-    
-    ```
 
-    
+    ```
 
 27. Create a custom resource definition and display it in the API with cURL.
 
@@ -961,11 +947,11 @@
 
     In order to create a new type of resources, we use CRDs.
 
-    When we query about a resource, custom or not, API server first finds it in the `aggragated ` layer, then in `kubernetes native resources`, and last in `API extensions`.
+    When we query about a resource, custom or not, API server first finds it in the `aggragated` layer, then in `kubernetes native resources`, and last in `API extensions`.
 
     ```bash
     # create crd manifest
-    
+
     cat > crd.yaml << EOF
     > apiVersion: apiextensions.k8s.io/v1
     > kind: CustomResourceDefinition
@@ -1008,64 +994,156 @@
     >     shortNames:
     >     - ct
     > EOF
-    
+
     # register crd api
     kubectl create -f crd.yaml
-    
+
     # find in using API server
     # start proxy on one session
     kubectl proxy
-    
-    # on another session 
+
+    # on another session
     curl http://localhost:8001/apis/stable.example.com/v1/crontabs
-    
+
     # OR use kubectl directly
     kubectl get crontabs
     ```
 
 28. Create a service that references an externalname and test that this works from another pod.
 
-    An **ExternalName Service** is a special case of Service that does not have selectors and uses DNS names instead. 
+    An **ExternalName Service** is a special case of Service that does not have selectors and uses DNS names instead.
 
+    ```sh
+    # lets create an nginx pod
+    kubectl run nginx --image=nginx --port=80 --dry-run=client -oyaml > nginx.yaml
+
+    # create nginx pod 
+    kubectl create -f nginx.yaml 
+
+    # create an external name service
+    cat > nginx-svc.yaml << EOF
+    apiVersion: v1
+    kind: Service
+    metadata:
+      creationTimestamp: null
+      labels:
+        run: nginx
+      name: nginx
+    spec:
+      ports:
+      - port: 80
+        protocol: TCP
+        targetPort: 80
+      selector:
+        run: nginx
+      type: ExternalName
+      externalName: mycustomnginx.cross.system.io
+    status:
+      loadBalancer: {}
+    EOF 
+
+    # create service
+    kubectl create -f nginx-svc.yaml   
+
+    # create a test-pod now and hit the above service
+    cat > test-pod.yaml << EOF
+    apiVersion: v1
+    kind: Pod
+    metadata:
+      name: test-pod
+      labels:
+        app: test
+    spec:
+      containers:
+      - name: test-container
+        image: nginx
+        command: ['sh', '-c', 'http://mycustomnginx.cross.system.io:80']
+    EOF
+
+    # create a test pod 
+    kubectl create -d test-pod.yaml
+    
+    # check logs 
+    kubectl logs -f test-pod
+
+    curl http://mycustomnginx.cross.system.io              
+    <html>
+    <head><title>301 Moved Permanently</title></head>
+    <body bgcolor="white">
+    <center><h1>301 Moved Permanently</h1></center>
+    <hr><center>nginx/1.14.2</center>
+    </body>
+    </html>
+    ```
+
+29. Create a pod that runs all processes as user 1000.
+
+    ```sh
+    # let's create a pod with user
+    cat > busy-box-pod.yaml << EOF
+    apiVersion: v1
+    kind: Pod
+    metadata:
+      name: security-context-demo
+    spec:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 3000
+        fsGroup: 2000
+      volumes:
+      - name: sec-ctx-vol
+        emptyDir: {}
+      containers:
+      - name: sec-ctx-demo
+        image: busybox
+        command: [ "sh", "-c", "sleep 1h" ]
+        volumeMounts:
+        - name: sec-ctx-vol
+          mountPath: /data/demo
+        securityContext:
+          allowPrivilegeEscalation: false
+    EOF
     
 
-29. 
+    # now create pod 
+    kubectl create -f busy-box-pod.yaml
+    ```
 
-1. Create a pod that runs all processes as user 1000.
+30. Write an ingress rule that redirects calls to `/foo` to one service and to `/bar` to another.
 
-2. Write an ingress rule that redirects calls to `/foo` to one service and to `/bar` to another.
+31. Write a service that exposes nginx on a nodeport.
 
-3. Write a service that exposes nginx on a nodeport.
-   1. Change it to use a cluster port.
-   2. Scale the service.
-   3. Change it to use an external IP.
-   4. Change it to use a load balancer.
+    1. Change it to use a cluster port.
+    2. Scale the service.
+    3. Change it to use an external IP.
+    4. Change it to use a load balancer.
 
-4. Deploy nginx with 3 replicas and then expose a port and use port forwarding to talk to a specific port.
+33. Deploy nginx with 3 replicas and then expose a port and use port forwarding to talk to a specific port.
 
-5. Get logs for Kubernetes master components.
+34. Get logs for Kubernetes master components.
 
-6. Get logs for Kubelet.
+35. Get logs for Kubelet.
 
-7. Backup an etcd cluster.
+36. Backup an etcd cluster.
 
-8. List the members of an etcd cluster.
+37. List the members of an etcd cluster.
 
-9. Find the health of etcd.
+38. Find the health of etcd.
 
-10. Create a namespace [Important]
+39. Create a namespace [Important]
 
     1. Run a pod in the new namespace.
     2. Put memory limits on the namespace.
     3. Limit pods to 2 persistent volumes in this namespace
 
-11. Create a networking policy such that only pods with the label access=granted can talk to it.
+
+40. Create a networking policy such that only pods with the label access=granted can talk to it.
 
     1. Create an nginx pod and attach this policy to it.
     2. Create a busybox pod and attempt to talk to nginx - should be blocked.
     3. Attach the label to busybox and try again - should be allowed.
 
-12. Create a multi containers of `nginx`, `redis` and `consul`.
+41. Create a multi containers of `nginx`, `redis` and `consul`.
 
     ```yaml
     kind: Pod
@@ -1094,13 +1172,13 @@
     status: {}
     ```
 
-13. Troubleshooting not ready state node.
+42. Troubleshooting not ready state node.
 
-14. Add missing worker node -- TLS bootstrapping.
+43. Add missing worker node -- TLS bootstrapping.
 
-15. Set up a Kubernetes cluster from scratch by using Kubeadm. [done]
+44. Set up a Kubernetes cluster from scratch by using Kubeadm. [done]
 
-16. Create Redis pod without using PV.
+45. Create Redis pod without using PV.
 
     ```yaml
     apiVersion: v1
@@ -1119,7 +1197,7 @@
           emptyDir: {}
     ```
 
-17. Creating PVolume with host path.
+46. Creating PVolume with host path.
 
     ```yaml
     apiVersion: v1
@@ -1138,13 +1216,13 @@
         path: "/mnt/data"
     ```
 
-18. Create pods,service in particular namespace, list all services in particular namespace.
+47. Create pods,service in particular namespace, list all services in particular namespace.
 
     ```sh
     kubectl get svc -n NAMESPACE_NAME
     ```
 
-19. Create nginx deployment nginx-random expose it; then create another pod busybox and do the following:
+48. Create nginx deployment nginx-random expose it; then create another pod busybox and do the following:
 
     1. Dnlookup service
     2. Dnslookup pod
@@ -1174,25 +1252,25 @@
     ```sh
     kubectl create -f my-nginx.yaml
     kubectl expose deployment/my-nginx
-    
+
     kubectl run curl --image=radial/busyboxplus:curl -i --tty
     kubectl exec -it curl -- sh
     nslookup my-nginx
     nslookup my-nginx-5b56ccd65f-9nrh6
     ```
 
-20. Expose a service to Nodeport. Edit the yaml.
+49. Expose a service to Nodeport. Edit the yaml.
 
     ```sh
     kubectl expose service nginx --port=443 --target-port=8443 --name=nginx-https --type=NodePort --dry-run=client -oyaml > nginx-np.yaml
     ```
 
-21. Create a pod that by passes kube-scheduler. Ensure that this is not a static pod.
+50. Create a pod that by passes kube-scheduler. Ensure that this is not a static pod.
     - Add a `nodeSelector` field
     - Add `schedulerName` field
 
-https://medium.com/@sensri108/practice-examples-dumps-tips-for-cka-ckad-certified-kubernetes-administrator-exam-by-cncf-4826233ccc27
+<https://medium.com/@sensri108/practice-examples-dumps-tips-for-cka-ckad-certified-kubernetes-administrator-exam-by-cncf-4826233ccc27>
 
-https://devops.digit.org/hiring-devops/devops-hiring/exercise-2
+<https://devops.digit.org/hiring-devops/devops-hiring/exercise-2>
 
-https://github.com/Kasunmadura/k8s/blob/master/cka-exam/README.md
+<https://github.com/Kasunmadura/k8s/blob/master/cka-exam/README.md>
