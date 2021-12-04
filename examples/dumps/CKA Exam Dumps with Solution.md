@@ -1111,39 +1111,106 @@
 
 30. Write an ingress rule that redirects calls to `/foo` to one service and to `/bar` to another.
 
+    ```sh
+    # first we install the nginx-ingress-controller
+
+    # then we create two deployments and their respective services
+    kubectl create deployment web --image=gcr.io/google-samples/hello-app:1.0
+    kubectl expose deployment web --type=NodePort --port=8080
+
+
+    kubectl create deployment web2 --image=gcr.io/google-samples/hello-app:2.0
+    kubectl expose deployment web2 --port=8080 --type=NodePort
+
+    # create an ingress now
+    cat > ingress.yaml <<EOF
+    apiVersion: networking.k8s.io/v1
+    kind: Ingress
+    metadata:
+      name: example-ingress
+      annotations:
+        nginx.ingress.kubernetes.io/rewrite-target: /$1
+    spec:
+      rules:
+        - host: hello-world.info
+          http:
+            paths:
+              - path: /foo
+                pathType: Prefix
+                backend:
+                  service:
+                    name: web
+                    port:
+                      number: 8080
+              - path: /bar
+                pathType: Prefix
+                backend:
+                  service:
+                    name: web2
+                    port:
+                      number: 8080
+    EOF
+
+    # create the ingress and wait for it to get ADDRESS field
+    kubectl get ingress
+    NAME              CLASS    HOSTS              ADDRESS        PORTS   AGE
+    example-ingress   <none>   hello-world.info   172.17.0.15    80      38s
+
+    # if you are using minikube, get the external IP of minikube using:
+    minikube ip
+    192.168.49.2
+
+    # pick this IP and add it to the list of `/etc/hosts`
+    EXTERNAL_IP   192.168.49.2
+    
+    # curl the hostname
+    curl hello-world.info/foo
+    Hello, world!
+    Version: 1.0.0
+    Hostname: web-79d88c97d6-t4qn7
+
+    curl hello-world.info/bar
+    Hello, world!
+    Version: 2.0.0
+    Hostname: web2-5d47994f45-2qc9g
+    ```
+
 31. Write a service that exposes nginx on a nodeport.
+    
+    
 
     1. Change it to use a cluster port.
+       
     2. Scale the service.
     3. Change it to use an external IP.
     4. Change it to use a load balancer.
 
-33. Deploy nginx with 3 replicas and then expose a port and use port forwarding to talk to a specific port.
+32. Deploy nginx with 3 replicas and then expose a port and use port forwarding to talk to a specific port.
 
-34. Get logs for Kubernetes master components.
+33. Get logs for Kubernetes master components.
 
-35. Get logs for Kubelet.
+34. Get logs for Kubelet.
 
-36. Backup an etcd cluster.
+35. Backup an etcd cluster.
 
-37. List the members of an etcd cluster.
+36. List the members of an etcd cluster.
 
-38. Find the health of etcd.
+37. Find the health of etcd.
 
-39. Create a namespace [Important]
+38. Create a namespace [Important]
 
     1. Run a pod in the new namespace.
     2. Put memory limits on the namespace.
     3. Limit pods to 2 persistent volumes in this namespace
 
 
-40. Create a networking policy such that only pods with the label access=granted can talk to it.
+39. Create a networking policy such that only pods with the label access=granted can talk to it.
 
     1. Create an nginx pod and attach this policy to it.
     2. Create a busybox pod and attempt to talk to nginx - should be blocked.
     3. Attach the label to busybox and try again - should be allowed.
 
-41. Create a multi containers of `nginx`, `redis` and `consul`.
+40. Create a multi containers of `nginx`, `redis` and `consul`.
 
     ```yaml
     kind: Pod
@@ -1172,13 +1239,13 @@
     status: {}
     ```
 
-42. Troubleshooting not ready state node.
+41. Troubleshooting not ready state node.
 
-43. Add missing worker node -- TLS bootstrapping.
+42. Add missing worker node -- TLS bootstrapping.
 
-44. Set up a Kubernetes cluster from scratch by using Kubeadm. [done]
+43. Set up a Kubernetes cluster from scratch by using Kubeadm. [done]
 
-45. Create Redis pod without using PV.
+44. Create Redis pod without using PV.
 
     ```yaml
     apiVersion: v1
@@ -1197,7 +1264,7 @@
           emptyDir: {}
     ```
 
-46. Creating PVolume with host path.
+45. Creating PVolume with host path.
 
     ```yaml
     apiVersion: v1
@@ -1216,13 +1283,13 @@
         path: "/mnt/data"
     ```
 
-47. Create pods,service in particular namespace, list all services in particular namespace.
+46. Create pods,service in particular namespace, list all services in particular namespace.
 
     ```sh
     kubectl get svc -n NAMESPACE_NAME
     ```
 
-48. Create nginx deployment nginx-random expose it; then create another pod busybox and do the following:
+47. Create nginx deployment nginx-random expose it; then create another pod busybox and do the following:
 
     1. Dnlookup service
     2. Dnslookup pod
@@ -1259,13 +1326,13 @@
     nslookup my-nginx-5b56ccd65f-9nrh6
     ```
 
-49. Expose a service to Nodeport. Edit the yaml.
+48. Expose a service to Nodeport. Edit the yaml.
 
     ```sh
     kubectl expose service nginx --port=443 --target-port=8443 --name=nginx-https --type=NodePort --dry-run=client -oyaml > nginx-np.yaml
     ```
 
-50. Create a pod that by passes kube-scheduler. Ensure that this is not a static pod.
+49. Create a pod that by passes kube-scheduler. Ensure that this is not a static pod.
     - Add a `nodeSelector` field
     - Add `schedulerName` field
 

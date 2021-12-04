@@ -11,6 +11,6 @@ kubectl expose deployment restapi -n restapi --port=8080 --dry-run=client -oyaml
 
 kubectl port-forward -n restapi svc/restapi 8080
 
-kubectl exec -it -n database mysql-6df55bffdc-h5j9s bash -- mysql -u root --password=BASE64_DECODED_VALUE_FROM_SECRET
+kubectl exec -it -n database mysql-6df55bffdc-6czjn bash -- mysql -u root --password=password
 
 echo ENCODED_VALUE_FROM_SECRET | base64 -d
