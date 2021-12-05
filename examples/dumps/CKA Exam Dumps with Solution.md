@@ -398,6 +398,10 @@
       kubectl proxy
       curl -X GET http://127.0.0.1:8001/api/v1/namespaces/default/pods
       ```
+
+    -
+    -
+    -
     -
     - ```sh
       # create a service account
@@ -943,7 +947,7 @@
 
 27. Create a custom resource definition and display it in the API with cURL.
 
-    # Custom Resource Definitions and Custom Resources
+# Custom Resource Definitions and Custom Resources
 
     In order to create a new type of resources, we use CRDs.
 
@@ -1017,8 +1021,8 @@
     # lets create an nginx pod
     kubectl run nginx --image=nginx --port=80 --dry-run=client -oyaml > nginx.yaml
 
-    # create nginx pod 
-    kubectl create -f nginx.yaml 
+    # create nginx pod
+    kubectl create -f nginx.yaml
 
     # create an external name service
     cat > nginx-svc.yaml << EOF
@@ -1040,10 +1044,10 @@
       externalName: mycustomnginx.cross.system.io
     status:
       loadBalancer: {}
-    EOF 
+    EOF
 
     # create service
-    kubectl create -f nginx-svc.yaml   
+    kubectl create -f nginx-svc.yaml
 
     # create a test-pod now and hit the above service
     cat > test-pod.yaml << EOF
@@ -1060,13 +1064,13 @@
         command: ['sh', '-c', 'http://mycustomnginx.cross.system.io:80']
     EOF
 
-    # create a test pod 
+    # create a test pod
     kubectl create -d test-pod.yaml
-    
-    # check logs 
+
+    # check logs
     kubectl logs -f test-pod
 
-    curl http://mycustomnginx.cross.system.io              
+    curl http://mycustomnginx.cross.system.io
     <html>
     <head><title>301 Moved Permanently</title></head>
     <body bgcolor="white">
@@ -1103,9 +1107,9 @@
         securityContext:
           allowPrivilegeEscalation: false
     EOF
-    
 
-    # now create pod 
+
+    # now create pod
     kubectl create -f busy-box-pod.yaml
     ```
 
@@ -1162,7 +1166,7 @@
 
     # pick this IP and add it to the list of `/etc/hosts`
     EXTERNAL_IP   192.168.49.2
-    
+
     # curl the hostname
     curl hello-world.info/foo
     Hello, world!
@@ -1176,26 +1180,94 @@
     ```
 
 31. Write a service that exposes nginx on a nodeport.
-    
-    
 
     1. Change it to use a cluster port.
-       
-    2. Scale the service.
-    3. Change it to use an external IP.
-    4. Change it to use a load balancer.
+       _Edit the target port (I think_ 🤔 _)_
+
+    2. Scale the deployment.
+    3. Change it to use an external IP. (can be done)
+    4. Change it to use a load balancer. (can be done)
+
+    <https://kubernetes.io/docs/concepts/services-networking/service/#loadbalancer>
+
+    ```sh
+    # create nginx deployment
+    kubectl create deployment nginx-dep --image=nginx --port=80
+    kubectl expose deployment nginx-dep --port=80 --type=NodePort
+    ```
+
+    A ClusterIP exposes the following:
+
+    `spec.clusterIp:spec.ports[*].port`
+    You can only access this service while inside the cluster. It is accessible from its `spec.clusterIp` port. If a `spec.ports[*].targetPort` is set it will route from the port to the targetPort. The CLUSTER-IP you get when calling kubectl get services is the IP assigned to this service within the cluster internally.
+
+    A NodePort exposes the following:
+
+    - `<NodeIP>:spec.ports[*].nodePort`
+    - `spec.clusterIp:spec.ports[*].port`
+
+    If you access this service on a nodePort from the node's external IP, it will route the request to `spec.clusterIp:spec.ports[*].port`, which will in turn route it to your `spec.ports[*].targetPort`, if set. This service can also be accessed in the same way as ClusterIP.
+
+    Your NodeIPs are the external IP addresses of the nodes. You cannot access your service from `spec.clusterIp:spec.ports[*].nodePort`.
+
+    A LoadBalancer exposes the following:
+
+    - `spec.loadBalancerIp:spec.ports[*].port`
+    - `<NodeIP>:spec.ports[*].nodePort`
+    - `spec.clusterIp:spec.ports[*].port`
+
+    You can access this service from your load balancer's IP address, which routes your request to a nodePort, which in turn routes the request to the clusterIP port. You can access this service as you would a NodePort or a ClusterIP service as well.
 
 32. Deploy nginx with 3 replicas and then expose a port and use port forwarding to talk to a specific port.
 
+    ```sh
+    # create an nginx deployment
+    kubectl create deployment nginx-dep --image=nginx --port=80
+
+    # use port forwarding to ping the pod
+    kubectl port-forward pod/nginx-7848d4b86f-69z66 8080:80
+
+    # now try hitting the port forwarding the pod
+    curl http://127.0.0.1:8080
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <title>Welcome to nginx!</title>
+    <style>
+    html { color-scheme: light dark; }
+    body { width: 35em; margin: 0 auto;
+    font-family: Tahoma, Verdana, Arial, sans-serif; }
+    </style>
+    </head>
+    <body>
+    <h1>Welcome to nginx!</h1>
+    <p>If you see this page, the nginx web server is successfully installed and
+    working. Further configuration is required.</p>
+
+    <p>For online documentation and support please refer to
+    <a href="http://nginx.org/">nginx.org</a>.<br/>
+    Commercial support is available at
+    <a href="http://nginx.com/">nginx.com</a>.</p>
+
+    <p><em>Thank you for using nginx.</em></p>
+    </body>
+    </html>
+    ```
+
 33. Get logs for Kubernetes master components.
 
-34. Get logs for Kubelet.
+    ```sh
+    # To get detailed information about the overall health of your cluster, you can run:
+    kubectl cluster-info dump
+    ```
 
-35. Backup an etcd cluster.
+34. Get logs for Kubelet. (simple)
 
-36. List the members of an etcd cluster.
+35. Backup an etcd cluster. (simple)
 
-37. Find the health of etcd.
+36. List the members of an etcd cluster. (simple)
+
+37. Find the health of etcd. (simple)
 
 38. Create a namespace [Important]
 
@@ -1203,6 +1275,34 @@
     2. Put memory limits on the namespace.
     3. Limit pods to 2 persistent volumes in this namespace
 
+    ```sh
+    # creating a new namespace
+    kubectl create ns ns38
+
+    # creating a new pod in ns38 namespace
+    kubectl run nginx -n ns38 --port=80
+
+    # create a limit range manifest
+    cat > lr.yaml <<EOF
+    apiVersion: v1
+    kind: LimitRange
+    metadata:
+      name: mem-limit-range
+      namespace: ns38
+    spec:
+      limits:
+      - default:
+          memory: 512Mi
+        defaultRequest:
+          memory: 256Mi
+        type: Container
+    EOF
+
+    # apply manifest
+    k apply -f lr.yaml
+    ```
+
+    https://devspace.cloud/cloud/docs/admin/spaces/limits-isolation/namespace-limits
 
 39. Create a networking policy such that only pods with the label access=granted can talk to it.
 
