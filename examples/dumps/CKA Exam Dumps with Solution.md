@@ -1310,6 +1310,8 @@
     2. Create a busybox pod and attempt to talk to nginx - should be blocked.
     3. Attach the label to busybox and try again - should be allowed.
 
+    https://kubernetes.io/docs/tasks/administer-cluster/declare-network-policy/
+
 40. Create a multi containers of `nginx`, `redis` and `consul`.
 
     ```yaml
