@@ -35,4 +35,7 @@ kubectl get pods -o=jsonpath='{.items[0]}'
 kubectl get pods -o=jsonpath='{.items[0].metadata.name}'
 kubectl get pods -o=jsonpath="{.items[*]['metadata.name', 'status.capacity']}"
 kubectl get pods -o=jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.status.startTime}{"\n"}{end}'
+kubectl get nodes -o=custom-columns=<COLUMN NAME>:<JSON PATH>
+kubectl get nodes -o=custom-columns=NODE:.metadata.name,CPU:.status.capacity.cpu
+kubectl get pods --sort-by=.metadata.name
 ```
