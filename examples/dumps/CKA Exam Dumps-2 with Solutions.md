@@ -1,7 +1,7 @@
 # CKA Exam Dumps-2
 
 1. Create a node that has a SSD and label it as such.
-2. Create a pod that is only scheduled on SSD nodes.l
+2. Create a pod that is only scheduled on SSD nodes.
 3. Create 2 pod definitions: the second pod should be scheduled to run anywhere the first pod is running - 2nd pod runs alongside the first pod.
 4. Create a deployment running nginx version 1.12.2 that will run in 2 pods.
    - Scale this to 4 pods.
