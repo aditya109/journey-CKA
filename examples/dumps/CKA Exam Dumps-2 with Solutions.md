@@ -1,12 +1,12 @@
 # CKA Exam Dumps-2
 
-1. Create a node that has a SSD and label it as such.
+1. Create a node that has a SSD and label it as such. ✅
    
    ```sh
    kubectl label node kubenode01 disktype=ssd
    kubectl label node kubenode01 disktype- # to delete the above label
    
-2. Create a pod that is only scheduled on SSD nodes.
+2. Create a pod that is only scheduled on SSD nodes. ✅
 
    ```sh
    cat pod.yaml >> EOF
@@ -27,7 +27,7 @@
    kubectl create -f pod.yaml
    ```
 
-3. Create 2 pod definitions: the second pod should be scheduled to run anywhere the first pod is running - 2nd pod runs alongside the first pod.
+3. Create 2 pod definitions: the second pod should be scheduled to run anywhere the first pod is running - 2nd pod runs alongside the first pod. ✅
 
    ```sh
    k run nginx --image=nginx -l=pos=first --dry-run=client -oyaml > first-pod.yaml
@@ -79,13 +79,13 @@
 
    
 
-4. Create a deployment running nginx version 1.12.2 that will run in 2 pods.
-   - Scale this to 4 pods.
-   - Scale it back to 2 pods.
-   - Upgrade this to 1.13.8.
-   - Check the status of the upgrade.
-   - How do you do this in a way that you can see the history of what happened?
-   - Undo the upgrade.
+4. Create a deployment running nginx version 1.12.2 that will run in 2 pods. ✅
+   - Scale this to 4 pods. ✅
+   - Scale it back to 2 pods. ✅
+   - Upgrade this to 1.13.8. ✅
+   - Check the status of the upgrade. ✅
+   - How do you do this in a way that you can see the history of what happened? ✅
+   - Undo the upgrade. ✅
    
    ```sh
    kubectl create deployment my-dep --replicas=2 --image=nginx:1.12.2 --dry-run=client -oyaml > dep.yaml
@@ -97,7 +97,7 @@
    kubectl rollout undo deployments/my-dep
    ```
    
-5. Create a pod that uses a scratch disk.
+5. ***Create a pod that uses a scratch disk.**
    
    ```sh
    cat > pod1.yaml << EOF
@@ -187,29 +187,200 @@
    
    
    
-   - Change the pod to mount a disk from the host.
+   - *****Change the pod to mount a disk from the host.
    
      
    
-   - Change the pod to mount a persistent volume.
+   - *****Change the pod to mount a persistent volume.
    
    Reference link: https://www.alibabacloud.com/blog/kubernetes-volume-basics-emptydir-and-persistentvolume_594834
    
-6. Create a pod that has a liveness check.
+6. Create a pod that has a liveness check. ✅
 
-7. Create a service that manually requires endpoint creation - and create that too.
-
-8. Create a daemon set.
-   - Change the update strategy to do a rolling update but delaying 30 seconds between pod updates.
+   ```sh
+   cat > pod-with-liveness.yaml << EOF
+   apiVersion: v1
+   kind: Pod
+   metadata:
+     labels:
+       test: liveness
+     name: liveness-exec
+   spec:
+     containers:
+     - name: liveness
+       image: k8s.gcr.io/busybox
+       args:
+       - /bin/sh
+       - -c
+       - touch /tmp/healthy; sleep 30; rm -rf /tmp/healthy; sleep 600
+       livenessProbe:
+         exec:
+           command:
+           - cat
+           - /tmp/healthy
+         initialDelaySeconds: 5
+         periodSeconds: 5
+   EOF
    
-9. Create a static pod.
+   kubectl create -f pod-with-liveness.yaml
+   kubectl describe pod/liveness-exec
+   ....
+   .....
+   Events:
+     Type     Reason     Age   From               Message
+     ----     ------     ----  ----               -------
+     Normal   Scheduled  43s   default-scheduler  Successfully assigned default/liveness-exec to kubenode02
+     Normal   Pulling    43s   kubelet            Pulling image "k8s.gcr.io/busybox"
+     Normal   Pulled     38s   kubelet            Successfully pulled image "k8s.gcr.io/busybox" in 4.664750908s
+     Normal   Created    38s   kubelet            Created container liveness
+     Normal   Started    38s   kubelet            Started container liveness
+     Warning  Unhealthy  4s    kubelet            Liveness probe failed: cat: can't open '/tmp/healthy': No such file or directory
+   ```
 
-10. Create a busybox container without a manifest. Then edit the manifest.
+7. Create a service that manually requires endpoint creation - and create that too. ✅
 
-11. Create a pod that uses secrets.
-    - Pull secrets from environment variables.
-    - Pull secrets from a volume.
+   ```bash
+   cat > service.yaml << EOF
+   > apiVersion: v1
+   > kind: Service
+   > metadata:
+   >   name: my-service
+   > spec:
+   >   ports:
+   >     - protocol: TCP
+   >       port: 80
+   >       targetPort: 9376
+   > EOF
+   kubectl create -f service.yaml 
+   cat > endpoint.yaml << EOF
+   > apiVersion: v1
+   > kind: Endpoints
+   > metadata:
+   >   name: my-service
+   > subsets:
+   >   - addresses:
+   >       - ip: 192.0.2.42
+   >     ports:
+   >       - port: 9376
+   > EOF
+   kubectl create -f endpoint.yaml
+
+8. Create a daemon set. ✅
+   - Change the update strategy to do a rolling update but delaying 5nan seconds between pod updates. ✅
+   
+   ```bash
+   cat > daemonset.yaml << EOF
+   apiVersion: apps/v1
+   kind: DaemonSet
+   metadata:
+     name: fluentd-elasticsearch
+     labels:
+       k8s-app: fluentd-logging
+   spec:
+     selector:
+       matchLabels:
+         name: fluentd-elasticsearch
+     updateStrategy:
+       type: OnDelete
+       rollingUpdate:
+         maxUnavailable: 1
+     template:
+       metadata:
+         labels:
+           name: fluentd-elasticsearch
+       spec:
+         tolerations:
+         # this toleration is to have the daemonset runnable on master nodes
+         # remove it if your masters can't run pods
+         - key: node-role.kubernetes.io/master
+           effect: NoSchedule
+         containers:
+         - name: fluentd-elasticsearch
+           image: quay.io/fluentd_elasticsearch/fluentd:v3.1.3
+           volumeMounts:
+           - name: varlog
+             mountPath: /var/log
+           - name: varlibdockercontainers
+             mountPath: /var/lib/docker/containers
+             readOnly: true
+         terminationGracePeriodSeconds: 30
+         volumes:
+         - name: varlog
+           hostPath:
+             path: /var/log
+         - name: varlibdockercontainers
+           hostPath:
+             path: /var/lib/docker/containers
+   kubectl create -f daemonset.yaml
+   ```
+   
+9. Create a static pod. ✅
+
+   ```bash
+   kubectl run nginx-static-pod --image=nginx --dry-run=client -oyaml > pod-nginx.yaml
+   ps aux | grep kubelet | grep config
+   sudo cp pod-nginx.yaml /etc/kubernetes/manifests
+   ```
+
+10. Create a busybox container without a manifest. Then edit the manifest. ✅
+
+    ```sh
+    kubectl run busybox-pod --image=busybox
+    kubectl edit pod/busybox-pod
+    ```
+
+11. Create a pod that uses secrets. ✅
+    - Pull secrets from environment variables. ✅
+    - Pull secrets from a volume.✅
     - Dump the secrets out via kubectl to show it worked.
+    
+    ```bash
+    kubectl create secret generic s1 --from-literal=logname=$LOGNAME --from-literal=name=ADITYA --dry-run=client -oyaml > secret.yaml 
+    cat > pod.yaml << EOF
+    apiVersion: v1
+    kind: Pod
+    metadata:
+      name: mypod
+    spec:
+      containers:
+      - name: mypod
+        image: nginx
+        env:
+          - name: LOGNAME
+            valueFrom:
+              secretKeyRef:
+                name: s1
+                key: logname
+          - name: NAME
+            valueFrom:
+              secretKeyRef:
+                name: s1
+                key: name
+    
+    kubectl create -f pod.yaml
+    
+    =================================================
+    cat > pod2.yaml << EOF
+    apiVersion: v1
+    kind: Pod
+    metadata:
+      name: mypod
+    spec:
+      containers:
+      - name: mypod
+        image: nginx
+        volumeMounts:
+        - name: foo
+          mountPath: "/etc/foo"
+          readOnly: true
+      volumes:
+      - name: foo
+        secret:
+          secretName: s1
+    kubectl create -f pod2.yaml
+    =================================
+    k get secret s1 -o jsonpath="{.data.logname}{'\n'}" | base64 -d && k1 -o jsonpath="{.data.name}" | base64 -d 
+    ```
     
 12. Create a job that runs every 3 minutes and prints out the current time.
 
