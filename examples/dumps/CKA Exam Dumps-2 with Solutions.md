@@ -332,7 +332,7 @@
 11. Create a pod that uses secrets. ✅
     - Pull secrets from environment variables. ✅
     - Pull secrets from a volume.✅
-    - Dump the secrets out via kubectl to show it worked.
+    - Dump the secrets out via kubectl to show it worked. ✅
     
     ```bash
     kubectl create secret generic s1 --from-literal=logname=$LOGNAME --from-literal=name=ADITYA --dry-run=client -oyaml > secret.yaml 
@@ -382,7 +382,7 @@
     k get secret s1 -o jsonpath="{.data.logname}{'\n'}" | base64 -d && k1 -o jsonpath="{.data.name}" | base64 -d 
     ```
     
-12. Create a job that runs every 3 minutes and prints out the current time.
+12. Create a job that runs every 3 minutes and prints out the current time. ✅
 
     ```sh
     cat > cronjob.yaml << EOF
@@ -415,7 +415,7 @@
     kubectl logs $pods
     ```
 
-13. Create a job that runs 20 times, 5 containers at a time, and prints "Hello parallel world".
+13. Create a job that runs 20 times, 5 containers at a time, and prints "Hello parallel world". ✅
 
     ```bash
     cat > job.yaml << EOF
@@ -439,12 +439,12 @@
     k logs -f -l=job-name=hello-job --max-log-requests=30
     ```
 
-14. Create a service that uses an external load balancer and points to a 3 pod cluster running nginx.
+14. Create a service that uses an external load balancer and points to a 3 pod cluster running nginx. ✅
 
-15. Create a horizontal autoscaling group that starts with 2 pods and scales when CPU usage is over 50%.
+15. Create a horizontal autoscaling group that starts with 2 pods and scales when CPU usage is over 50%. ✅
 
-16. Create a custom resource definition.
-    - Display it in the API with curl.
+16. Create a custom resource definition. ✅
+    - Display it in the API with curl. ✅
     
     ```bash
     cat > crd.yaml << EOF
