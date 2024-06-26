@@ -17,3 +17,5 @@ Backup of *.doc*
 
 # Visio autosave temporary files
 *.~vsd*
+
+*.idea
