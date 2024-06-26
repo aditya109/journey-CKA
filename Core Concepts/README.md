@@ -511,7 +511,7 @@ Kubernetes supports multiple virtual clusters backed by the same physical cluste
 
 - Namespaces are a way to divide cluster resources between multiple users (via resource quota).
 
-![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/Core Concepts/assets/image7.svg)
+![](https://raw.githubusercontent.com/aditya109/journey-CKA/387b5c692a8785218885543dbfd76d17926c68df/assets/image7.svg)
 
 The `namespace-dev.yml` is follows:
 
@@ -627,7 +627,7 @@ http://localhost:8080/api/v1/proxy/namespaces/<NAMESPACE>/services/<SERVICE-NAME
 
 **A scenario for using `ClusterIP` service**
 
-![](D:\Work\teaching-myself\learning-k8s\Core Concepts\assets\image23.svg)
+![](https://raw.githubusercontent.com/aditya109/journey-CKA/387b5c692a8785218885543dbfd76d17926c68df/assets/image23.svg)
 
 ```yaml
 # ingress.yaml
@@ -741,7 +741,7 @@ No `clusterIP` is assigned.
 
 It creates a service which is accessible on a static port on each worker node in the cluster. The difference between `NodePort` and `ClusterIP` is that `ClusterIP` service is only accessible within the cluster, so no external traffic can directly address the `ClusterIP` service, whereas the `NodePort` service makes the traffic accessible on static or fixed port on each worker node.
 
-![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/Core Concepts/assets/image11.svg)
+![](https://raw.githubusercontent.com/aditya109/journey-CKA/387b5c692a8785218885543dbfd76d17926c68df/assets/image11.svg)
 
 The **nodeport-service-definition.yml** is as follows:
 
@@ -764,7 +764,7 @@ spec:
 
 Another example,
 
-![](D:\Work\teaching-myself\learning-k8s\Core Concepts\assets\image24.svg)
+![](https://raw.githubusercontent.com/aditya109/journey-CKA/387b5c692a8785218885543dbfd76d17926c68df/assets/image24.svg)
 
 ```yaml
 apiVersion: v1
