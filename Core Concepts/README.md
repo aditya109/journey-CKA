@@ -583,7 +583,7 @@ Also, one point to note that, whenever we create a `service`, `kubenetes` create
 
 A ClusterIP service is the Kubernetes service which gives you a service inside your cluster that other apps inside you cluster can access, for which there is no external access.
 
-![](https://raw.githubusercontent.com/aditya109/learning-k8s/main/Core Concepts/assets/image22.svg)
+![](https://raw.githubusercontent.com/aditya109/journey-CKA/387b5c692a8785218885543dbfd76d17926c68df/assets/image22.svg)
 
 The **clusterip-service-definition.yaml** is as follows:
 
