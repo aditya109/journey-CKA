@@ -1,0 +1,9 @@
+kind: PdfDocument
+apiVersion: k8s.startkubernetes.com/v1
+metadata: 
+  name: my-document
+spec:
+  documentName: my-text
+  text: |
+    ### My document
+    Hello ***world*** !!!
